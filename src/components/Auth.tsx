@@ -16,6 +16,9 @@ const validatePassword = (pass: string) => {
   if (!/[a-z]/.test(pass)) {
     return 'Password must contain at least one lowercase letter.';
   }
+  if (!/[0-9]/.test(pass)) {
+    return 'Password must contain at least one number.';
+  }
   if (!/[^A-Za-z0-9]/.test(pass)) {
     return 'Password must contain at least one special character (e.g., !, @, #, etc.).';
   }
@@ -68,7 +71,7 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || 'Authentication failed. Please try again.');
+        throw new Error(data.message || data.error || 'Authentication failed. Please try again.');
       }
 
       if (mode === 'login') {

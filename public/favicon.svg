@@ -1,22 +1,60 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 32 32" width="32" height="32">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <defs>
-    <linearGradient id="faviconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    
+    <!-- Primary Cyan-to-Emerald Gradient -->
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="50%" stop-color="#0db7a6" />
       <stop offset="100%" stop-color="#10b981" />
     </linearGradient>
+    
+    <!-- Gold/Sparkle Gradient -->
+    <linearGradient id="sparkleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#34d399" />
+    </linearGradient>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
   </defs>
-  <!-- Document / Resume outline -->
-  <rect x="5" y="3" width="22" height="26" rx="4" fill="#0f172a" stroke="url(#faviconGrad)" stroke-width="2" />
-  
-  <!-- Text lines representing Resume sections -->
-  <line x1="9" y1="9" x2="19" y2="9" stroke="#64748b" stroke-width="2" stroke-linecap="round" />
-  <line x1="9" y1="14" x2="23" y2="14" stroke="#475569" stroke-width="2" stroke-linecap="round" />
-  <line x1="9" y1="19" x2="16" y2="19" stroke="#475569" stroke-width="2" stroke-linecap="round" />
-  
-  <!-- Optimization Badge (Checkmark in a Circle) on the bottom right -->
-  <circle cx="22" cy="22" r="6" fill="#020617" stroke="url(#faviconGrad)" stroke-width="1.5" />
-  <path d="M19.5 22l1.5 1.5 3-3" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-  
-  <!-- Sparkles/Magic at the top right indicating AI optimization -->
-  <path d="M25 6l0.5 1 1 0.5-1 0.5-0.5 1-0.5-1-1-0.5 1-0.5z" fill="#22d3ee" />
+
+  <!-- Outer soft glow circle -->
+  <circle cx="64" cy="64" r="60" fill="url(#bgGrad)" stroke="url(#primaryGrad)" stroke-width="3" filter="url(#shadow)"/>
+
+  <!-- Document / Page Shape -->
+  <g filter="url(#shadow)">
+    <!-- Main page body -->
+    <path d="M38 24h38l22 22v54c0 4.4-3.6 8-8 8H38c-4.4 0-8-3.6-8-8V32c0-4.4 3.6-8 8-8z" fill="#1e293b" stroke="url(#primaryGrad)" stroke-width="2"/>
+    
+    <!-- Folded page corner -->
+    <path d="M76 24v16c0 3.3 2.7 6 6 6h16L76 24z" fill="#0f172a" stroke="url(#primaryGrad)" stroke-width="1.5"/>
+  </g>
+
+  <!-- Text lines representing Resume Content -->
+  <rect x="42" y="44" width="24" height="4" rx="2" fill="#64748b" />
+  <rect x="42" y="56" width="48" height="4" rx="2" fill="#475569" />
+  <rect x="42" y="68" width="36" height="4" rx="2" fill="#475569" />
+  <rect x="42" y="80" width="20" height="4" rx="2" fill="#475569" />
+
+  <!-- Magic Sparkles (AI Optimizer) -->
+  <path d="M96 24l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="url(#sparkleGrad)" filter="url(#glow)"/>
+  <path d="M84 14l1.5 3 3 1.5-3 1.5-1.5 3-1.5-3-3-1.5 3-1.5z" fill="url(#sparkleGrad)"/>
+  <path d="M102 42l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" fill="url(#sparkleGrad)"/>
+
+  <!-- Checkmark circle (Optimized Badge) on bottom right -->
+  <g filter="url(#shadow)">
+    <circle cx="94" cy="94" r="18" fill="url(#primaryGrad)" />
+    <path d="M86 94l5.5 5.5 11-11" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  </g>
 </svg>

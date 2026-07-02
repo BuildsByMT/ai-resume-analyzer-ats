@@ -47,6 +47,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error: any) {
     console.error('Login error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ success: false, message: error.message, error: error.message });
   }
 }
