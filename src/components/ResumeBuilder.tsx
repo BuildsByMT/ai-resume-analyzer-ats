@@ -1,12 +1,53 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { jsPDF } from 'jspdf';
-import { ChevronRight, ChevronLeft, Download, Plus, Trash2, User, Briefcase, GraduationCap, Code, FolderGit } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Download, Plus, Trash2, User, Briefcase, GraduationCap, Code, FolderGit, Upload, Loader2, Sparkles } from 'lucide-react';
+
+const industryPresets = {
+  tech: {
+    languages: 'Programming Languages',
+    frameworks: 'Frameworks & Libraries',
+    tools: 'Tools & Platforms',
+    placeholderLanguages: 'JavaScript, TypeScript, Python, Go, Rust, SQL',
+    placeholderFrameworks: 'React, Next.js, Node.js, Express, Tailwind CSS, Vue',
+    placeholderTools: 'Git, Docker, TiDB Database, Vercel, AWS, Kubernetes'
+  },
+  hr: {
+    languages: 'Core HR Competencies',
+    frameworks: 'Methodologies & Compliance',
+    tools: 'HR Software & ATS Tools',
+    placeholderLanguages: 'Talent Acquisition, Employee Relations, Labor Law Compliance, Conflict Resolution',
+    placeholderFrameworks: 'Onboarding Policies, Benefits Administration, Performance Management, Performance Audits',
+    placeholderTools: 'Workday, BambooHR, LinkedIn Recruiter, MS Excel, ADP Payroll, Lever ATS'
+  },
+  engineering: {
+    languages: 'Core Engineering Competencies',
+    frameworks: 'Design Standards & Compliance',
+    tools: 'Software & Instrumentation',
+    placeholderLanguages: 'Circuit Design, Power Systems, CAD Drafting, Thermodynamics, Signal Processing',
+    placeholderFrameworks: 'IEEE Standards, Six Sigma Green Belt, Lean Manufacturing, NEC Safety Codes',
+    placeholderTools: 'MATLAB, AutoCAD, SolidWorks, Oscilloscopes, Spectrum Analyzers, LabVIEW'
+  },
+  general: {
+    languages: 'Core Professional Competencies',
+    frameworks: 'Methodologies & Operations',
+    tools: 'Software, Systems & Platforms',
+    placeholderLanguages: 'Project Management, Financial Analysis, Strategic Planning, Business Development',
+    placeholderFrameworks: 'Agile Methodologies, Market Research, Client Account Management, Customer Retention',
+    placeholderTools: 'Salesforce CRM, Microsoft Office Suite, Trello, Jira, Slack, HubSpot'
+  }
+};
 
 export const ResumeBuilder: React.FC = () => {
-  const { token } = useStore();
+  const { token, userApiKey } = useStore();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseError, setParseError] = useState('');
+  const [parseSuccess, setParseSuccess] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<'tech' | 'hr' | 'engineering' | 'general'>('tech');
+  
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Form States
   const [contact, setContact] = useState({
@@ -51,6 +92,102 @@ export const ResumeBuilder: React.FC = () => {
 
   const addProject = () => setProjects([...projects, { title: '', tech: '', details: '' }]);
   const removeProject = (index: number) => setProjects(projects.filter((_, i) => i !== index));
+
+  // AI parser upload handler
+  const handleParseUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setParseError('');
+    setParseSuccess(false);
+    
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    if (file.type !== 'application/pdf') {
+      setParseError('Only PDF files are supported for import.');
+      return;
+    }
+
+    setIsParsing(true);
+
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64String = reader.result as string;
+
+        try {
+          const response = await fetch('/api/parse-resume', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              pdfBase64: base64String,
+              userApiKey
+            })
+          });
+
+          const data = await response.json();
+          if (!response.ok || !data.success) {
+            throw new Error(data.error || data.message || 'Parsing failed.');
+          }
+
+          const parsed = data.data;
+
+          if (parsed.contact) {
+            setContact({
+              name: parsed.contact.name || '',
+              email: parsed.contact.email || '',
+              phone: parsed.contact.phone || '',
+              website: parsed.contact.website || '',
+              location: parsed.contact.location || '',
+            });
+          }
+
+          if (parsed.experience && Array.isArray(parsed.experience)) {
+            setExperience(parsed.experience.length > 0 ? parsed.experience : [{ company: '', role: '', duration: '', details: '' }]);
+          }
+
+          if (parsed.education && Array.isArray(parsed.education)) {
+            setEducation(parsed.education.length > 0 ? parsed.education : [{ school: '', degree: '', duration: '' }]);
+          }
+
+          if (parsed.projects && Array.isArray(parsed.projects)) {
+            setProjects(parsed.projects.length > 0 ? parsed.projects : [{ title: '', tech: '', details: '' }]);
+          }
+
+          if (parsed.skills) {
+            setSkills({
+              languages: parsed.skills.languages || '',
+              frameworks: parsed.skills.frameworks || '',
+              tools: parsed.skills.tools || '',
+            });
+
+            const l = (parsed.skills.languages || '').toLowerCase();
+            const f = (parsed.skills.frameworks || '').toLowerCase();
+            const t = (parsed.skills.tools || '').toLowerCase();
+            if (l.includes('recruiting') || f.includes('compliance') || f.includes('hiring')) {
+              setSelectedPreset('hr');
+            } else if (l.includes('cad') || t.includes('solidworks') || l.includes('matlab') || l.includes('circuit')) {
+              setSelectedPreset('engineering');
+            } else if (l.includes('javascript') || l.includes('python') || f.includes('react') || f.includes('next.js')) {
+              setSelectedPreset('tech');
+            } else {
+              setSelectedPreset('general');
+            }
+          }
+
+          setParseSuccess(true);
+          setStep(1);
+        } catch (apiErr: any) {
+          setParseError(apiErr.message || 'API request failed.');
+        } finally {
+          setIsParsing(false);
+        }
+      };
+    } catch (err: any) {
+      setParseError('Failed to read file.');
+      setIsParsing(false);
+    }
+  };
 
   // Generate ATS PDF using jsPDF (Strict Single Column Layout)
   const handleGeneratePDF = async () => {
@@ -206,14 +343,15 @@ export const ResumeBuilder: React.FC = () => {
       // 4. Skills Section
       if (skills.languages || skills.frameworks || skills.tools) {
         addSectionHeading('Technical Skills');
+        const presetLabels = industryPresets[selectedPreset];
         if (skills.languages) {
-          addText(`Languages:  ${skills.languages}`, 9.5, false, 12);
+          addText(`${presetLabels.languages}:  ${skills.languages}`, 9.5, false, 12);
         }
         if (skills.frameworks) {
-          addText(`Frameworks / Libraries:  ${skills.frameworks}`, 9.5, false, 12);
+          addText(`${presetLabels.frameworks}:  ${skills.frameworks}`, 9.5, false, 12);
         }
         if (skills.tools) {
-          addText(`Tools / Platforms:  ${skills.tools}`, 9.5, false, 12);
+          addText(`${presetLabels.tools}:  ${skills.tools}`, 9.5, false, 12);
         }
       }
 
@@ -371,22 +509,23 @@ export const ResumeBuilder: React.FC = () => {
 
     let skillsHtml = '';
     if (skills.languages || skills.frameworks || skills.tools) {
+      const presetLabels = industryPresets[selectedPreset];
       skillsHtml = `
         <h2>Technical Skills</h2>
         <table style="width: 100%; border: none; border-collapse: collapse;">
           ${skills.languages ? `
             <tr>
-              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">Languages:</td>
+              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(presetLabels.languages)}:</td>
               <td style="font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(skills.languages)}</td>
             </tr>` : ''}
           ${skills.frameworks ? `
             <tr>
-              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">Frameworks / Libraries:</td>
+              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(presetLabels.frameworks)}:</td>
               <td style="font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(skills.frameworks)}</td>
             </tr>` : ''}
           ${skills.tools ? `
             <tr>
-              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">Tools / Platforms:</td>
+              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(presetLabels.tools)}:</td>
               <td style="font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(skills.tools)}</td>
             </tr>` : ''}
         </table>
@@ -526,6 +665,51 @@ export const ResumeBuilder: React.FC = () => {
             {/* Step 1: Contact Info */}
             {step === 1 && (
               <div className="space-y-4 animate-in fade-in duration-200">
+                {/* AI Kickstart card */}
+                <div className="p-4 bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 border border-cyan-500/20 rounded-2xl mb-6 relative overflow-hidden group">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5 text-cyan-400 font-bold text-xs uppercase tracking-wider">
+                        <Sparkles size={14} className="animate-pulse" />
+                        AI Auto-Fill Resume Parser
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-relaxed max-w-xl">
+                        Upload an existing resume PDF to instantly extract your details, work history, education, projects, and skills. You can review and complete the remaining parts.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isParsing}
+                      className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold text-xs rounded-xl shadow-md hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer shrink-0"
+                    >
+                      {isParsing ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />
+                          Parsing...
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={13} />
+                          Import PDF
+                        </>
+                      )}
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleParseUpload}
+                      accept=".pdf"
+                      className="hidden"
+                    />
+                  </div>
+                  {parseError && (
+                    <p className="text-rose-400 text-[10px] mt-2 font-medium">{parseError}</p>
+                  )}
+                  {parseSuccess && (
+                    <p className="text-emerald-400 text-[10px] mt-2 font-medium">✓ Resume parsed successfully! All sections populated below.</p>
+                  )}
+                </div>
+
                 <h3 className="text-base font-bold text-slate-200 border-b border-slate-900 pb-2.5 mb-4">Contact Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -815,35 +999,68 @@ export const ResumeBuilder: React.FC = () => {
             {/* Step 5: Skills */}
             {step === 5 && (
               <div className="space-y-4 animate-in fade-in duration-200">
-                <h3 className="text-base font-bold text-slate-200 border-b border-slate-900 pb-2.5 mb-4">Technical Skills</h3>
+                <h3 className="text-base font-bold text-slate-200 border-b border-slate-900 pb-2.5 mb-4">Technical & Core Skills</h3>
+                
+                {/* Industry Preset Selector */}
+                <div className="mb-4">
+                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Select Industry Preset</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: 'tech', label: 'Technology' },
+                      { id: 'hr', label: 'Human Resources' },
+                      { id: 'engineering', label: 'Engineering' },
+                      { id: 'general', label: 'General / Business' }
+                    ].map(preset => (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => setSelectedPreset(preset.id as any)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                          selectedPreset === preset.id
+                            ? 'bg-slate-900 text-cyan-400 border-slate-800'
+                            : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:text-slate-200'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Programming Languages</label>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase mb-1">
+                      {industryPresets[selectedPreset].languages}
+                    </label>
                     <input
                       type="text"
                       value={skills.languages}
                       onChange={e => setSkills({ ...skills, languages: e.target.value })}
-                      placeholder="JavaScript, TypeScript, Python, SQL"
+                      placeholder={industryPresets[selectedPreset].placeholderLanguages}
                       className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Frameworks & Libraries</label>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase mb-1">
+                      {industryPresets[selectedPreset].frameworks}
+                    </label>
                     <input
                       type="text"
                       value={skills.frameworks}
                       onChange={e => setSkills({ ...skills, frameworks: e.target.value })}
-                      placeholder="React, Next.js, Express, Tailwind CSS"
+                      placeholder={industryPresets[selectedPreset].placeholderFrameworks}
                       className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Tools & Platforms</label>
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase mb-1">
+                      {industryPresets[selectedPreset].tools}
+                    </label>
                     <input
                       type="text"
                       value={skills.tools}
                       onChange={e => setSkills({ ...skills, tools: e.target.value })}
-                      placeholder="Git, Docker, TiDB, Vercel, AWS"
+                      placeholder={industryPresets[selectedPreset].placeholderTools}
                       className="w-full bg-slate-950/60 border border-slate-900 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
                     />
                   </div>

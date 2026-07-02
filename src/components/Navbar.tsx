@@ -27,29 +27,29 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab }) => {
           </span>
         </div>
 
-        {/* Navigation Tabs */}
+        {/* Navigation Tabs (Desktop Only) */}
         {user && (
-          <div className="flex items-center gap-1 bg-slate-950/60 p-1 border border-slate-900 rounded-xl max-w-[140px] xs:max-w-[200px] sm:max-w-xs md:max-w-none overflow-x-auto no-scrollbar">
+          <div className="hidden md:flex items-center gap-1.5 bg-slate-950/60 p-1.5 border border-slate-900 rounded-xl">
             <button
               onClick={() => { window.location.hash = '#/dashboard'; }}
-              className={`px-2.5 py-1 md:px-4 md:py-1.5 rounded-lg text-[10px] md:text-sm font-semibold transition-all duration-300 flex items-center gap-1 md:gap-2 shrink-0 cursor-pointer ${
+              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 cursor-pointer shrink-0 ${
                 activeTab === 'dashboard' || activeTab === 'analysis'
                   ? 'bg-slate-900 text-cyan-400 shadow-sm border border-slate-800'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <BarChart3 size={13} className="md:w-3.5 md:h-3.5" />
+              <BarChart3 size={15} />
               ATS Analyzer
             </button>
             <button
               onClick={() => { window.location.hash = '#/creator'; }}
-              className={`px-2.5 py-1 md:px-4 md:py-1.5 rounded-lg text-[10px] md:text-sm font-semibold transition-all duration-300 flex items-center gap-1 md:gap-2 shrink-0 cursor-pointer ${
+              className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 cursor-pointer shrink-0 ${
                 activeTab === 'creator'
                   ? 'bg-slate-900 text-cyan-400 shadow-sm border border-slate-800'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <FileText size={13} className="md:w-3.5 md:h-3.5" />
+              <FileText size={15} />
               ATS CV Creator
             </button>
           </div>

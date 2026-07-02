@@ -5,6 +5,7 @@ import { Auth } from './components/Auth';
 import { Dashboard } from './components/Dashboard';
 import { AnalysisResults } from './components/AnalysisResults';
 import { ResumeBuilder } from './components/ResumeBuilder';
+import { BarChart3, FileText } from 'lucide-react';
 
 function App() {
   const { user } = useStore();
@@ -77,7 +78,7 @@ function App() {
       <Navbar activeTab={activeTab} />
 
       {/* Main Container Layout */}
-      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 animate-in fade-in duration-300">
+      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-6 relative z-10 animate-in fade-in duration-300">
         {activeTab === 'login' && <Auth mode="login" />}
         {activeTab === 'signup' && <Auth mode="signup" />}
         {activeTab === 'dashboard' && <Dashboard />}
@@ -86,9 +87,38 @@ function App() {
       </main>
 
       {/* Footer Branding */}
-      <footer className="w-full text-center py-6 border-t border-slate-950 text-[10px] text-slate-600 font-semibold tracking-wider uppercase">
+      <footer className="w-full text-center py-6 border-t border-slate-950 text-[10px] text-slate-600 font-semibold tracking-wider uppercase pb-24 md:pb-6">
         © 2026 Resume Optimizer Dashboard. All rights reserved. Powered by TiDB Cloud & Gemini AI.
       </footer>
+
+      {/* Mobile Bottom Navigation Bar */}
+      {user && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-slate-950/80 backdrop-blur-lg border-t border-slate-900 px-6 py-2.5 flex items-center justify-around">
+          <button
+            onClick={() => { window.location.hash = '#/dashboard'; }}
+            className={`flex flex-col items-center gap-1 cursor-pointer transition-colors duration-300 ${
+              activeTab === 'dashboard' || activeTab === 'analysis'
+                ? 'text-cyan-400'
+                : 'text-slate-500 hover:text-slate-400'
+            }`}
+          >
+            <BarChart3 size={20} />
+            <span className="text-[10px] font-bold">ATS Analyzer</span>
+          </button>
+
+          <button
+            onClick={() => { window.location.hash = '#/creator'; }}
+            className={`flex flex-col items-center gap-1 cursor-pointer transition-colors duration-300 ${
+              activeTab === 'creator'
+                ? 'text-cyan-400'
+                : 'text-slate-500 hover:text-slate-400'
+            }`}
+          >
+            <FileText size={20} />
+            <span className="text-[10px] font-bold">ATS CV Creator</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
