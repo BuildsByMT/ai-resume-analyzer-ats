@@ -2,11 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store';
 import { Upload, Briefcase, Play, Loader2, History, Trash2, ShieldAlert, User, ExternalLink } from 'lucide-react';
 
-interface DashboardProps {
-  setActiveTab: (tab: string) => void;
-}
+interface DashboardProps {}
 
-export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
+export const Dashboard: React.FC<DashboardProps> = () => {
   const { token, user, userApiKey, historyAnalyses, setHistory, setCurrentAnalysis } = useStore();
   
   const [file, setFile] = useState<File | null>(null);
@@ -131,13 +129,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
             })
           });
 
+          const contentType = response.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            // It returned a non-JSON page (likely 500 error or timeout)
+            const text = await response.text();
+            console.error("Serverless API error output:", text);
+            throw new Error("API call timed out or failed. Please check your Vercel logs and ensure your DATABASE_URL does not point to the restricted /sys database.");
+          }
+
           const resData = await response.json();
           if (!response.ok || !resData.success) {
             throw new Error(resData.message || 'Analysis failed. Please check your Gemini API key and try again.');
           }
 
           setCurrentAnalysis(resData.data);
-          setActiveTab('analysis');
+          window.location.hash = '#/analysis';
         } catch (apiErr: any) {
           setErrorMsg(apiErr.message || 'API request failed.');
           setIsLoading(false);
@@ -292,7 +298,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                         overallScore: item.overall_score,
                         // Note: We can expand this, but for now we set the tab
                       });
-                      setActiveTab('analysis');
+                      window.location.hash = '#/analysis';
                     }}
                     className="p-3 bg-slate-950/60 border border-slate-900 hover:border-slate-800 rounded-xl flex items-center justify-between cursor-pointer group transition-all duration-200"
                   >

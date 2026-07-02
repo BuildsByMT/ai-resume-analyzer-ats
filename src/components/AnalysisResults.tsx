@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { useStore } from '../store';
 import { ChevronLeft, BarChart2, BookOpen, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
 
-interface AnalysisResultsProps {
-  setActiveTab: (tab: string) => void;
-}
+interface AnalysisResultsProps {}
 
-export const AnalysisResults: React.FC<AnalysisResultsProps> = ({ setActiveTab }) => {
+export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
   const { currentAnalysis } = useStore();
   const [activeSubTab, setActiveSubTab] = useState<'keywords' | 'formatting' | 'suggestions'>('keywords');
 
@@ -17,7 +15,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({ setActiveTab }
         <h3 className="text-xl font-bold text-slate-200">No active analysis</h3>
         <p className="text-slate-500 text-sm mt-2">Please upload and scan a resume from the dashboard home.</p>
         <button
-          onClick={() => setActiveTab('dashboard')}
+          onClick={() => { window.location.hash = '#/dashboard'; }}
           className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 hover:text-slate-100 transition-colors"
         >
           <ChevronLeft size={14} /> Back to Dashboard
@@ -35,7 +33,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = ({ setActiveTab }
       {/* Return Navigation */}
       <div className="mb-6">
         <button
-          onClick={() => setActiveTab('dashboard')}
+          onClick={() => { window.location.hash = '#/dashboard'; }}
           className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-900/60 border border-slate-800/80 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
         >
           <ChevronLeft size={14} />

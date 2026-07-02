@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { ShieldCheck, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 
 interface AuthProps {
   mode: 'login' | 'signup';
-  setActiveTab: (tab: string) => void;
 }
 
-export const Auth: React.FC<AuthProps> = ({ mode, setActiveTab }) => {
+export const Auth: React.FC<AuthProps> = ({ mode }) => {
   const { setAuth } = useStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,12 +50,12 @@ export const Auth: React.FC<AuthProps> = ({ mode, setActiveTab }) => {
         setAuth(data.user, data.token);
         setSuccessMsg('Logged in successfully!');
         setTimeout(() => {
-          setActiveTab('dashboard');
+          window.location.hash = '#/dashboard';
         }, 1000);
       } else {
         setSuccessMsg('Registration successful! You can now log in.');
         setTimeout(() => {
-          setActiveTab('login');
+          window.location.hash = '#/login';
         }, 1500);
       }
     } catch (err: any) {
@@ -72,6 +71,12 @@ export const Auth: React.FC<AuthProps> = ({ mode, setActiveTab }) => {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 rounded-full blur-3xl pointer-events-none bg-glow-glow"></div>
 
       <div className="glass-card w-full max-w-md rounded-2xl p-8 relative z-10">
+        <button
+          onClick={() => { window.location.hash = '#/dashboard'; }}
+          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors mb-6 cursor-pointer"
+        >
+          <ArrowLeft size={14} /> Back to Dashboard
+        </button>
         <div className="text-center mb-8">
           <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 text-cyan-400 mb-4">
             <ShieldCheck size={28} />
@@ -178,7 +183,7 @@ export const Auth: React.FC<AuthProps> = ({ mode, setActiveTab }) => {
 
         <div className="mt-6 text-center">
           <button
-            onClick={() => setActiveTab(mode === 'login' ? 'signup' : 'login')}
+            onClick={() => { window.location.hash = mode === 'login' ? '#/signup' : '#/login'; }}
             className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
           >
             {mode === 'login' 

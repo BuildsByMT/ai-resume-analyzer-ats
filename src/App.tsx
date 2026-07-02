@@ -10,6 +10,33 @@ function App() {
   const { user } = useStore();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
+  // Handle URL Hash routing e.g., #/dashboard, #/login
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash === '#/login') {
+        setActiveTab('login');
+      } else if (hash === '#/signup') {
+        setActiveTab('signup');
+      } else if (hash === '#/creator') {
+        setActiveTab('creator');
+      } else if (hash === '#/analysis') {
+        setActiveTab('analysis');
+      } else {
+        // Fallback to dashboard and set default hash if empty
+        setActiveTab('dashboard');
+        if (!hash || hash === '#/') {
+          window.location.hash = '#/dashboard';
+        }
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Run initial check on mount
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Auto-initialize TiDB Database Tables on mount
   useEffect(() => {
     const initDb = async () => {
@@ -37,14 +64,14 @@ function App() {
       <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-gradient-to-tr from-purple-500/5 to-blue-500/5 rounded-full blur-3xl pointer-events-none bg-glow-glow"></div>
 
       {/* Navigation Header */}
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar activeTab={activeTab} />
 
       {/* Main Container Layout */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 animate-in fade-in duration-300">
-        {activeTab === 'login' && <Auth mode="login" setActiveTab={setActiveTab} />}
-        {activeTab === 'signup' && <Auth mode="signup" setActiveTab={setActiveTab} />}
-        {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
-        {activeTab === 'analysis' && <AnalysisResults setActiveTab={setActiveTab} />}
+        {activeTab === 'login' && <Auth mode="login" />}
+        {activeTab === 'signup' && <Auth mode="signup" />}
+        {activeTab === 'dashboard' && <Dashboard />}
+        {activeTab === 'analysis' && <AnalysisResults />}
         {activeTab === 'creator' && <ResumeBuilder />}
       </main>
 
