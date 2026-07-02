@@ -77,7 +77,7 @@ function App() {
       <Navbar activeTab={activeTab} />
 
       {/* Main Container Layout */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 animate-in fade-in duration-300">
+      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 animate-in fade-in duration-300">
         {activeTab === 'login' && <Auth mode="login" />}
         {activeTab === 'signup' && <Auth mode="signup" />}
         {activeTab === 'dashboard' && <Dashboard />}

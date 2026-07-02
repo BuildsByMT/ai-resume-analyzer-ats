@@ -46,6 +46,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       Target Job Title: ${jobTitle || 'General Application'}
       ${jdText}
 
+      Use the following strict scoring rubric to calculate the scores:
+      1. Keyword Score (keywordScore):
+         - Calculate as: (Number of matched keywords / (Number of matched keywords + Number of missing keywords)) * 100.
+         - If no JD is provided, evaluate standard software/industry keyword density on a scale of 0 to 100.
+      2. Experience Score (experienceScore):
+         - Score from 0 to 100 evaluating the alignment of the candidate's experience level (years of experience, title progression) with the JD requirements.
+         - Deduct points for mismatch in experience levels or lack of structural progression.
+      3. Formatting Score (formattingScore):
+         - Start at 100. Deduct 15 points for each formatting issue (e.g. multi-column layout, use of graphics/charts, tables, text in headers/footers, non-standard section headers). Min score is 0.
+      4. Overall Score (overallScore):
+         - Calculate as a weighted average:
+           * If JD is provided: overallScore = Math.round((0.5 * keywordScore) + (0.35 * experienceScore) + (0.15 * formattingScore))
+           * If no JD is provided: overallScore = Math.round((0.3 * keywordScore) + (0.3 * experienceScore) + (0.4 * formattingScore))
+
       Provide your output strictly in JSON format matching this schema:
       {
         "overallScore": 85,

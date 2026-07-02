@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { ChevronLeft, BarChart2, BookOpen, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
+import { ChevronLeft, BarChart2, BookOpen, AlertTriangle, CheckCircle, HelpCircle, Copy, Info } from 'lucide-react';
 
 interface AnalysisResultsProps {}
 
 export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
   const { currentAnalysis } = useStore();
   const [activeSubTab, setActiveSubTab] = useState<'keywords' | 'formatting' | 'suggestions'>('keywords');
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const handleCopy = (text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => {
+      setCopiedIndex(null);
+    }, 2000);
+  };
 
   if (!currentAnalysis) {
     return (
@@ -29,7 +38,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
   const scoreBorderColor = overallScore >= 80 ? 'border-emerald-500/20' : overallScore >= 60 ? 'border-amber-500/20' : 'border-rose-500/20';
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
       {/* Return Navigation */}
       <div className="mb-6">
         <button
@@ -41,7 +50,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Side: Score Summary Panel */}
         <div className="glass-card rounded-2xl p-6 flex flex-col items-center text-center h-fit">
           <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-6">ATS Match Score</h3>
@@ -95,15 +104,23 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
               </div>
             </div>
           </div>
+
+          {/* Disclaimer Note */}
+          <div className="mt-5 p-3 bg-slate-950/40 border border-slate-900/60 rounded-xl text-[10px] text-slate-500 leading-relaxed text-left flex items-start gap-1.5">
+            <Info size={12} className="text-cyan-500 shrink-0 mt-0.5" />
+            <span>
+              Note: This score is a simulated estimate of standard ATS scanning filters. Official scanner algorithms may vary by vendor.
+            </span>
+          </div>
         </div>
 
         {/* Right Side: Tabbed Details Panel */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
           {/* Sub-tabs header selection */}
-          <div className="flex bg-slate-950/60 p-1 border border-slate-900 rounded-xl">
+          <div className="flex bg-slate-950/60 p-1 border border-slate-900 rounded-xl overflow-x-auto no-scrollbar">
             <button
               onClick={() => setActiveSubTab('keywords')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 ${
+              className={`flex-1 shrink-0 py-2 px-4 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 ${
                 activeSubTab === 'keywords'
                   ? 'bg-slate-900 text-cyan-400 border border-slate-800/80 shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
@@ -114,7 +131,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
             </button>
             <button
               onClick={() => setActiveSubTab('formatting')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 ${
+              className={`flex-1 shrink-0 py-2 px-4 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 ${
                 activeSubTab === 'formatting'
                   ? 'bg-slate-900 text-cyan-400 border border-slate-800/80 shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
@@ -125,7 +142,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
             </button>
             <button
               onClick={() => setActiveSubTab('suggestions')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 ${
+              className={`flex-1 shrink-0 py-2 px-4 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 ${
                 activeSubTab === 'suggestions'
                   ? 'bg-slate-900 text-cyan-400 border border-slate-800/80 shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
@@ -216,8 +233,24 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
                         <span className="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Your Phrasing</span>
                         <p className="text-xs text-slate-400 leading-relaxed italic">"{item.original}"</p>
                       </div>
-                      <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">
-                        <span className="block text-[10px] font-semibold text-emerald-500 uppercase mb-1">ATS-Optimized</span>
+                      <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl relative">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-[10px] font-semibold text-emerald-500 uppercase">ATS-Optimized</span>
+                          <button
+                            onClick={() => handleCopy(item.suggested, i)}
+                            className="text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1 cursor-pointer bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800"
+                            title="Copy suggestion to clipboard"
+                          >
+                            {copiedIndex === i ? (
+                              <span className="text-emerald-400">Copied!</span>
+                            ) : (
+                              <>
+                                <Copy size={11} />
+                                Copy
+                              </>
+                            )}
+                          </button>
+                        </div>
                         <p className="text-xs text-slate-200 leading-relaxed font-medium">"{item.suggested}"</p>
                       </div>
                     </div>

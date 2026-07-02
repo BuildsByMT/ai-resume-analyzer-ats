@@ -247,8 +247,244 @@ export const ResumeBuilder: React.FC = () => {
     }
   };
 
+  // Generate ATS Word (.doc) using clean MS Word XML envelope
+  const handleGenerateWord = () => {
+    const escapeHtml = (text: string) => {
+      if (!text) return '';
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    };
+
+    const name = escapeHtml(contact.name || 'Your Name');
+    const email = escapeHtml(contact.email);
+    const phone = escapeHtml(contact.phone);
+    const website = escapeHtml(contact.website);
+    const location = escapeHtml(contact.location);
+
+    const subhead = [email, phone, location, website].filter(Boolean).join('  |  ');
+
+    let experienceHtml = '';
+    if (experience.some(exp => exp.company || exp.role)) {
+      experienceHtml = `
+        <h2>Experience</h2>
+        ${experience.map(exp => {
+          if (!exp.company && !exp.role) return '';
+          const role = escapeHtml(exp.role || 'Role');
+          const company = escapeHtml(exp.company || 'Company');
+          const duration = escapeHtml(exp.duration || 'Date range');
+          
+          let bulletsHtml = '';
+          if (exp.details) {
+            const bulletPoints = exp.details.split('\n').filter(Boolean);
+            bulletsHtml = `
+              <ul>
+                ${bulletPoints.map(bullet => {
+                  const cleaned = bullet.trim().replace(/^•\s*/, '');
+                  return `<li>${escapeHtml(cleaned)}</li>`;
+                }).join('')}
+              </ul>
+            `;
+          }
+
+          return `
+            <div class="entry">
+              <table style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 2pt;">
+                <tr>
+                  <td style="font-weight: bold; text-align: left; font-size: 10pt; font-family: Arial, sans-serif;">${role}</td>
+                  <td style="text-align: right; color: #475569; font-size: 9.5pt; font-family: Arial, sans-serif;">${duration}</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="font-style: italic; color: #334155; font-size: 9.5pt; font-family: Arial, sans-serif; padding-top: 1pt;">${company}</td>
+                </tr>
+              </table>
+              ${bulletsHtml}
+            </div>
+          `;
+        }).join('')}
+      `;
+    }
+
+    let educationHtml = '';
+    if (education.some(edu => edu.school || edu.degree)) {
+      educationHtml = `
+        <h2>Education</h2>
+        ${education.map(edu => {
+          if (!edu.school && !edu.degree) return '';
+          const degree = escapeHtml(edu.degree || 'Degree');
+          const school = escapeHtml(edu.school || 'School');
+          const duration = escapeHtml(edu.duration || 'Date range');
+
+          return `
+            <div class="entry">
+              <table style="width: 100%; border: none; border-collapse: collapse; margin-bottom: 2pt;">
+                <tr>
+                  <td style="font-weight: bold; text-align: left; font-size: 10pt; font-family: Arial, sans-serif;">${degree}</td>
+                  <td style="text-align: right; color: #475569; font-size: 9.5pt; font-family: Arial, sans-serif;">${duration}</td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="color: #334155; font-size: 9.5pt; font-family: Arial, sans-serif; padding-top: 1pt;">${school}</td>
+                </tr>
+              </table>
+            </div>
+          `;
+        }).join('')}
+      `;
+    }
+
+    let projectsHtml = '';
+    if (projects.some(proj => proj.title)) {
+      projectsHtml = `
+        <h2>Projects</h2>
+        ${projects.map(proj => {
+          if (!proj.title) return '';
+          const title = escapeHtml(proj.title);
+          const tech = proj.tech ? `<span style="font-weight: normal; font-size: 9pt; color: #475569; font-family: Arial, sans-serif;">  [${escapeHtml(proj.tech)}]</span>` : '';
+          
+          let bulletsHtml = '';
+          if (proj.details) {
+            const bulletPoints = proj.details.split('\n').filter(Boolean);
+            bulletsHtml = `
+              <ul>
+                ${bulletPoints.map(bullet => {
+                  const cleaned = bullet.trim().replace(/^•\s*/, '');
+                  return `<li>${escapeHtml(cleaned)}</li>`;
+                }).join('')}
+              </ul>
+            `;
+          }
+
+          return `
+            <div class="entry">
+              <div style="font-weight: bold; font-size: 10pt; font-family: Arial, sans-serif; margin-bottom: 2pt;">
+                ${title}${tech}
+              </div>
+              ${bulletsHtml}
+            </div>
+          `;
+        }).join('')}
+      `;
+    }
+
+    let skillsHtml = '';
+    if (skills.languages || skills.frameworks || skills.tools) {
+      skillsHtml = `
+        <h2>Technical Skills</h2>
+        <table style="width: 100%; border: none; border-collapse: collapse;">
+          ${skills.languages ? `
+            <tr>
+              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">Languages:</td>
+              <td style="font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(skills.languages)}</td>
+            </tr>` : ''}
+          ${skills.frameworks ? `
+            <tr>
+              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">Frameworks / Libraries:</td>
+              <td style="font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(skills.frameworks)}</td>
+            </tr>` : ''}
+          ${skills.tools ? `
+            <tr>
+              <td style="font-weight: bold; width: 140pt; vertical-align: top; font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">Tools / Platforms:</td>
+              <td style="font-size: 9.5pt; font-family: Arial, sans-serif; padding-bottom: 3pt;">${escapeHtml(skills.tools)}</td>
+            </tr>` : ''}
+        </table>
+      `;
+    }
+
+    const htmlContent = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <title>${name}_Resume_ATS</title>
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
+        <style>
+          @page {
+            size: 8.5in 11in;
+            margin: 0.75in;
+          }
+          body {
+            font-family: Arial, sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.2;
+            color: #1e293b;
+          }
+          h1 {
+            font-size: 20pt;
+            text-align: center;
+            margin-top: 0px;
+            margin-bottom: 4px;
+            color: #0f172a;
+            font-weight: bold;
+          }
+          .contact-info {
+            text-align: center;
+            font-size: 9.5pt;
+            margin-bottom: 18px;
+            color: #475569;
+          }
+          h2 {
+            font-size: 11pt;
+            text-transform: uppercase;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 2px;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            color: #0f172a;
+            font-weight: bold;
+          }
+          .entry {
+            margin-bottom: 10px;
+          }
+          ul {
+            margin-top: 2px;
+            margin-bottom: 2px;
+            padding-left: 18px;
+          }
+          li {
+            margin-bottom: 2px;
+            font-size: 9pt;
+            color: #334155;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>${name}</h1>
+        <div class="contact-info">
+          ${subhead}
+        </div>
+        ${experienceHtml}
+        ${educationHtml}
+        ${projectsHtml}
+        ${skillsHtml}
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + htmlContent], {
+      type: 'application/msword'
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name.replace(/\s+/g, '_') || 'Resume'}_ATS.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold text-slate-100 tracking-tight">
@@ -259,7 +495,7 @@ export const ResumeBuilder: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Left: Step navigation list */}
         <div className="lg:col-span-1 glass-card rounded-2xl p-4 h-fit space-y-2">
           {[
@@ -285,7 +521,7 @@ export const ResumeBuilder: React.FC = () => {
         </div>
 
         {/* Right: Step Inputs */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-4 space-y-6">
           <div className="glass-card rounded-2xl p-6 min-h-[350px]">
             {/* Step 1: Contact Info */}
             {step === 1 && (
@@ -634,14 +870,23 @@ export const ResumeBuilder: React.FC = () => {
                 Next <ChevronRight size={14} />
               </button>
             ) : (
-              <button
-                onClick={handleGeneratePDF}
-                disabled={isGenerating}
-                className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 text-xs font-bold rounded-xl hover:opacity-95 shadow-lg shadow-cyan-500/10 transition-all cursor-pointer"
-              >
-                <Download size={14} />
-                {isGenerating ? 'Compiling PDF...' : 'Download ATS PDF'}
-              </button>
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={handleGenerateWord}
+                  className="flex items-center gap-1.5 px-5 py-2.5 bg-slate-900 border border-slate-800 text-slate-100 text-xs font-bold rounded-xl hover:border-slate-700 shadow-md transition-all cursor-pointer"
+                >
+                  <Download size={14} className="text-cyan-400" />
+                  Download ATS Word
+                </button>
+                <button
+                  onClick={handleGeneratePDF}
+                  disabled={isGenerating}
+                  className="flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 text-xs font-bold rounded-xl hover:opacity-95 shadow-lg shadow-cyan-500/10 transition-all cursor-pointer"
+                >
+                  <Download size={14} />
+                  {isGenerating ? 'Compiling PDF...' : 'Download ATS PDF'}
+                </button>
+              </div>
             )}
           </div>
         </div>

@@ -98,7 +98,7 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
       {/* Background glow highlights */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 rounded-full blur-3xl pointer-events-none bg-glow-glow"></div>
 
-      <div className="glass-card w-full max-w-md rounded-2xl p-8 relative z-10">
+      <div className="glass-card w-full max-w-md rounded-2xl p-5 sm:p-8 relative z-10">
         <button
           onClick={() => { window.location.hash = '#/dashboard'; }}
           className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors mb-6 cursor-pointer"
