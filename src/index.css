@@ -1,14 +1,30 @@
 @import "tailwindcss";
 
-/* Custom styles for our premium glassmorphic dark-theme dashboard */
 :root {
   color-scheme: dark;
 }
 
+:root.light {
+  color-scheme: light;
+  
+  /* Swap Tailwind Slate colors so dark utilities look light, and light utilities look dark */
+  --color-slate-950: #f8fafc;
+  --color-slate-900: #f1f5f9;
+  --color-slate-800: #e2e8f0;
+  --color-slate-700: #cbd5e1;
+  --color-slate-600: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-400: #475569;
+  --color-slate-300: #334155;
+  --color-slate-200: #1e293b;
+  --color-slate-100: #0f172a;
+  --color-slate-50: #0f172a;
+}
+
 body {
   margin: 0;
-  background-color: #020617; /* bg-slate-950 */
-  color: #f8fafc; /* text-slate-50 */
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-100);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
@@ -19,6 +35,12 @@ body {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.3s, border 0.3s;
+}
+
+:root.light .glass-panel {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .glass-card {
@@ -27,6 +49,13 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: background 0.3s, border 0.3s, box-shadow 0.3s;
+}
+
+:root.light .glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.06);
 }
 
 .text-gradient {

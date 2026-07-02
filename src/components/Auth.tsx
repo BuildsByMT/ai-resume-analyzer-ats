@@ -1,16 +1,34 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { ShieldCheck, Mail, Lock, Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, Loader2, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 interface AuthProps {
   mode: 'login' | 'signup';
 }
+
+const validatePassword = (pass: string) => {
+  if (pass.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+  if (!/[A-Z]/.test(pass)) {
+    return 'Password must contain at least one uppercase letter.';
+  }
+  if (!/[a-z]/.test(pass)) {
+    return 'Password must contain at least one lowercase letter.';
+  }
+  if (!/[^A-Za-z0-9]/.test(pass)) {
+    return 'Password must contain at least one special character (e.g., !, @, #, etc.).';
+  }
+  return null;
+};
 
 export const Auth: React.FC<AuthProps> = ({ mode }) => {
   const { setAuth } = useStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -25,9 +43,16 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
       return;
     }
 
-    if (mode === 'signup' && password !== confirmPassword) {
-      setErrorMsg('Passwords do not match.');
-      return;
+    if (mode === 'signup') {
+      if (password !== confirmPassword) {
+        setErrorMsg('Passwords do not match.');
+        return;
+      }
+      const pwdError = validatePassword(password);
+      if (pwdError) {
+        setErrorMsg(pwdError);
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -128,17 +153,25 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
               Password
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500 animate-pulse">
                 <Lock size={16} />
               </span>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-10 pr-10 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
           </div>
 
@@ -152,13 +185,21 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
                   <Lock size={16} />
                 </span>
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                  className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-10 pr-10 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                  title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
           )}

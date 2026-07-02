@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { SettingsModal } from './SettingsModal';
-import { Settings, LogOut, FileText, BarChart3 } from 'lucide-react';
+import { Settings, LogOut, FileText, BarChart3, Sun, Moon } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab }) => {
-  const { user, logout } = useStore();
+  const { user, logout, theme, toggleTheme } = useStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -59,10 +59,19 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab }) => {
         <div className="flex items-center gap-3">
 
 
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl transition-all duration-300 cursor-pointer"
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
           {/* Settings Trigger */}
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl transition-all duration-300"
+            className="p-2 text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl transition-all duration-300 cursor-pointer"
             title="Settings"
           >
             <Settings size={18} />

@@ -12,11 +12,13 @@ interface AuthState {
   historyResumes: any[];
   historyAnalyses: any[];
   currentAnalysis: any | null;
+  theme: 'light' | 'dark';
   setAuth: (user: User | null, token: string | null) => void;
   logout: () => void;
   setUserApiKey: (key: string | null) => void;
   setHistory: (resumes: any[], analyses: any[]) => void;
   setCurrentAnalysis: (analysis: any | null) => void;
+  toggleTheme: () => void;
 }
 
 export const useStore = create<AuthState>((set) => ({
@@ -26,6 +28,7 @@ export const useStore = create<AuthState>((set) => ({
   historyResumes: [],
   historyAnalyses: [],
   currentAnalysis: null,
+  theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'dark',
 
   setAuth: (user, token) => {
     if (user && token) {
@@ -57,4 +60,14 @@ export const useStore = create<AuthState>((set) => ({
 
   setHistory: (resumes, analyses) => set({ historyResumes: resumes, historyAnalyses: analyses }),
   setCurrentAnalysis: (analysis) => set({ currentAnalysis: analysis }),
+  toggleTheme: () => set((state) => {
+    const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', nextTheme);
+    if (nextTheme === 'light') {
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+    }
+    return { theme: nextTheme };
+  }),
 }));
