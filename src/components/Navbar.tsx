@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { SettingsModal } from './SettingsModal';
-import { Settings, LogOut, FileText, BarChart3, ShieldAlert, Sparkles } from 'lucide-react';
+import { Settings, LogOut, FileText, BarChart3, Sparkles } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
@@ -9,7 +9,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
-  const { user, logout, userApiKey } = useStore();
+  const { user, logout } = useStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -58,16 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">
-          {/* Missing API Key Warning */}
-          {!userApiKey && (
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-full text-xs font-medium cursor-pointer hover:bg-amber-500/15 transition-colors"
-            >
-              <ShieldAlert size={12} />
-              Configure API Key
-            </button>
-          )}
+
 
           {/* Settings Trigger */}
           <button
