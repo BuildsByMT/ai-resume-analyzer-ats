@@ -25,7 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
       // Fetch resumes and analyses history
       const resumesRes = await db.execute('SELECT id, resume_name, updated_at FROM resumes WHERE user_id = ? ORDER BY updated_at DESC', [userId]);
-      const analysesRes = await db.execute('SELECT id, job_title, overall_score, created_at FROM analyses WHERE user_id = ? ORDER BY created_at DESC', [userId]);
+      const analysesRes = await db.execute('SELECT id, job_title, overall_score, score_breakdown, suggestions, keywords, formatting_issues, created_at FROM analyses WHERE user_id = ? ORDER BY created_at DESC', [userId]);
 
       const resumes = Array.isArray(resumesRes) ? resumesRes : (resumesRes as any).rows || [];
       const analyses = Array.isArray(analysesRes) ? analysesRes : (analysesRes as any).rows || [];

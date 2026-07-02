@@ -293,10 +293,34 @@ export const Dashboard: React.FC<DashboardProps> = () => {
                   <div
                     key={item.id}
                     onClick={() => {
-                      // Fetch full data or set tab directly
+                      let breakdown = {};
+                      let suggestions = [];
+                      let keywords = {};
+                      let formattingIssues = [];
+
+                      try {
+                        breakdown = typeof (item as any).score_breakdown === 'string' 
+                          ? JSON.parse((item as any).score_breakdown) 
+                          : (item as any).score_breakdown || {};
+                        suggestions = typeof (item as any).suggestions === 'string' 
+                          ? JSON.parse((item as any).suggestions) 
+                          : (item as any).suggestions || [];
+                        keywords = typeof (item as any).keywords === 'string' 
+                          ? JSON.parse((item as any).keywords) 
+                          : (item as any).keywords || {};
+                        formattingIssues = typeof (item as any).formatting_issues === 'string' 
+                          ? JSON.parse((item as any).formatting_issues) 
+                          : (item as any).formatting_issues || [];
+                      } catch (e) {
+                        console.error('Failed to parse analysis history details:', e);
+                      }
+
                       setCurrentAnalysis({
                         overallScore: item.overall_score,
-                        // Note: We can expand this, but for now we set the tab
+                        breakdown,
+                        rewritingSuggestions: suggestions,
+                        keywords,
+                        formattingIssues
                       });
                       window.location.hash = '#/analysis';
                     }}

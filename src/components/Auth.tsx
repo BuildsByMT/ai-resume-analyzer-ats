@@ -93,6 +93,15 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
     }
   };
 
+  // Dynamic validation helper
+  const rules = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password)
+  };
+
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
       {/* Background glow highlights */}
@@ -101,9 +110,10 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
       <div className="glass-card w-full max-w-md rounded-2xl p-5 sm:p-8 relative z-10">
         <button
           onClick={() => { window.location.hash = '#/dashboard'; }}
-          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors mb-6 cursor-pointer"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-900/60 border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all duration-300 hover:bg-slate-900 cursor-pointer mb-6"
         >
-          <ArrowLeft size={14} /> Back to Dashboard
+          <ArrowLeft size={14} className="text-cyan-500" />
+          Back to Dashboard
         </button>
         <div className="text-center mb-8">
           <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 text-cyan-400 mb-4">
@@ -156,7 +166,7 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
               Password
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500 animate-pulse">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
                 <Lock size={16} />
               </span>
               <input
@@ -176,6 +186,35 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+
+            {/* Dynamic Password Strength Checker (Signup Only) */}
+            {mode === 'signup' && password.length > 0 && (
+              <div className="mt-2.5 p-3 bg-slate-950/60 border border-slate-900 rounded-xl space-y-1.5 animate-in fade-in duration-200">
+                <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wide mb-1">Password Requirements:</span>
+                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${rules.length ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
+                    <span className={rules.length ? 'text-emerald-400' : 'text-slate-500'}>Min 8 characters</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${rules.uppercase ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
+                    <span className={rules.uppercase ? 'text-emerald-400' : 'text-slate-500'}>One uppercase letter</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${rules.lowercase ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
+                    <span className={rules.lowercase ? 'text-emerald-400' : 'text-slate-500'}>One lowercase letter</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${rules.number ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
+                    <span className={rules.number ? 'text-emerald-400' : 'text-slate-500'}>One number</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 col-span-2">
+                    <span className={`w-1.5 h-1.5 rounded-full ${rules.special ? 'bg-emerald-500' : 'bg-slate-700'}`}></span>
+                    <span className={rules.special ? 'text-emerald-400' : 'text-slate-500'}>One special character (!@#$%^&*)</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {mode === 'signup' && (

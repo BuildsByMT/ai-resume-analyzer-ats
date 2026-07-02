@@ -43,6 +43,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       )
     `);
 
+    // Dynamic schema expansion for scan history details
+    try {
+      await db.execute('ALTER TABLE analyses ADD COLUMN keywords JSON');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE analyses ADD COLUMN formatting_issues JSON');
+    } catch (_) {}
+
     return res.status(200).json({ success: true, message: 'Database tables initialized successfully in TiDB Cloud.' });
   } catch (error: any) {
     console.error('Database initialization error:', error);

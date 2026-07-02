@@ -132,7 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Save analysis record
         await db.execute(
-          'INSERT INTO analyses (id, user_id, job_title, job_description, overall_score, score_breakdown, suggestions) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO analyses (id, user_id, job_title, job_description, overall_score, score_breakdown, suggestions, keywords, formatting_issues) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [
             id,
             userId,
@@ -141,6 +141,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             analysisJson.overallScore || 0,
             JSON.stringify(analysisJson.breakdown || {}),
             JSON.stringify(analysisJson.rewritingSuggestions || []),
+            JSON.stringify(analysisJson.keywords || {}),
+            JSON.stringify(analysisJson.formattingIssues || []),
           ]
         );
 

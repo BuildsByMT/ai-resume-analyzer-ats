@@ -39,7 +39,7 @@ const industryPresets = {
 };
 
 export const ResumeBuilder: React.FC = () => {
-  const { token, userApiKey } = useStore();
+  const { token, userApiKey, currentAnalysis } = useStore();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
@@ -206,6 +206,15 @@ export const ResumeBuilder: React.FC = () => {
       const contentWidth = pageWidth - (margin * 2);
       let y = 54;
 
+      // Helper to dynamically check page break and reset height
+      const checkPageBreak = (neededHeight: number) => {
+        const pageHeight = doc.internal.pageSize.getHeight();
+        if (y + neededHeight > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+        }
+      };
+
       // Helper to add lines with wrap text and page-break check
       const addText = (text: string, fontSize: number, isBold = false, spacing = 12) => {
         doc.setFont('helvetica', isBold ? 'bold' : 'normal');
@@ -243,6 +252,9 @@ export const ResumeBuilder: React.FC = () => {
 
       // Divider helper
       const addSectionHeading = (title: string) => {
+        // Pre-check for section header page break
+        checkPageBreak(30);
+
         y += 8;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
@@ -261,6 +273,22 @@ export const ResumeBuilder: React.FC = () => {
         addSectionHeading('Experience');
         experience.forEach(exp => {
           if (!exp.company && !exp.role) return;
+
+          // Calculate height needed
+          let neededHeight = 26; // Spacing for headers (12 for role + 14 for company)
+          if (exp.details) {
+            const bulletPoints = exp.details.split('\n').filter(Boolean);
+            bulletPoints.forEach(bullet => {
+              const cleanedBullet = bullet.trim().startsWith('•') 
+                ? bullet.trim() 
+                : `•  ${bullet.trim()}`;
+              const lines = doc.splitTextToSize(cleanedBullet, contentWidth);
+              neededHeight += (lines.length * 11) + 4;
+            });
+            neededHeight += 6;
+          }
+
+          checkPageBreak(neededHeight);
           
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
@@ -270,13 +298,12 @@ export const ResumeBuilder: React.FC = () => {
           doc.text(exp.duration || 'Date range', pageWidth - margin, y, { align: 'right' });
           y += 12;
 
-          doc.setFont('helvetica', 'bold');
+          doc.setFont('helvetica', 'normal');
           doc.setFontSize(9.5);
           doc.text(exp.company || 'Company', margin, y);
           y += 14;
 
           if (exp.details) {
-            // Split bullet points
             const bulletPoints = exp.details.split('\n').filter(Boolean);
             bulletPoints.forEach(bullet => {
               const cleanedBullet = bullet.trim().startsWith('•') 
@@ -294,6 +321,11 @@ export const ResumeBuilder: React.FC = () => {
         addSectionHeading('Education');
         education.forEach(edu => {
           if (!edu.school && !edu.degree) return;
+
+          // Calculate height needed
+          let neededHeight = 30; // 12 for degree + 18 for school
+
+          checkPageBreak(neededHeight);
 
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
@@ -315,6 +347,22 @@ export const ResumeBuilder: React.FC = () => {
         addSectionHeading('Projects');
         projects.forEach(proj => {
           if (!proj.title) return;
+
+          // Calculate height needed
+          let neededHeight = 12; // Header spacing
+          if (proj.details) {
+            const bulletPoints = proj.details.split('\n').filter(Boolean);
+            bulletPoints.forEach(bullet => {
+              const cleanedBullet = bullet.trim().startsWith('•') 
+                ? bullet.trim() 
+                : `•  ${bullet.trim()}`;
+              const lines = doc.splitTextToSize(cleanedBullet, contentWidth);
+              neededHeight += (lines.length * 11) + 4;
+            });
+            neededHeight += 6;
+          }
+
+          checkPageBreak(neededHeight);
 
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
@@ -660,7 +708,7 @@ export const ResumeBuilder: React.FC = () => {
         </div>
 
         {/* Right: Step Inputs */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className={`${currentAnalysis ? 'lg:col-span-3' : 'lg:col-span-4'} space-y-6`}>
           <div className="glass-card rounded-2xl p-6 min-h-[350px]">
             {/* Step 1: Contact Info */}
             {step === 1 && (
@@ -1107,6 +1155,88 @@ export const ResumeBuilder: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Right Sidebar: AI Optimization Assistant */}
+        {currentAnalysis && (
+          <div className="lg:col-span-1 space-y-6">
+            <div className="glass-card rounded-2xl p-5 border border-cyan-500/20 relative overflow-hidden h-fit">
+              <div className="absolute -right-10 -top-10 w-24 h-24 bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 rounded-full blur-2xl"></div>
+              
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-900">
+                <Sparkles size={16} className="text-cyan-400 animate-pulse shrink-0" />
+                <h3 className="font-bold text-slate-200 text-xs uppercase tracking-wider">AI CV Assistant</h3>
+              </div>
+
+              {!token ? (
+                <div className="text-center py-4 space-y-3">
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Log in or Sign up to unlock interactive suggestions that auto-apply directly to your CV creator forms!
+                  </p>
+                  <button
+                    onClick={() => { window.location.hash = '#/login'; }}
+                    className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold py-2 rounded-xl text-xs cursor-pointer shadow-md"
+                  >
+                    Log In / Sign Up
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4 max-h-[500px] overflow-y-auto no-scrollbar">
+                  {/* Missing Keywords */}
+                  {currentAnalysis.keywords?.missing?.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Add Missing Keywords</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {currentAnalysis.keywords.missing.map((kw: string, i: number) => (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              const currentSkills = skills.languages ? `${skills.languages}, ${kw}` : kw;
+                              setSkills({ ...skills, languages: currentSkills });
+                            }}
+                            className="px-2 py-1 bg-slate-950 hover:bg-slate-900 border border-slate-900 text-slate-300 hover:text-cyan-400 rounded-lg text-[9px] font-medium transition-colors flex items-center gap-1 cursor-pointer"
+                            title="Click to add to Skills"
+                          >
+                            + {kw}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bullet Rewriting Suggestions */}
+                  {currentAnalysis.rewritingSuggestions?.length > 0 && (
+                    <div className="space-y-3 pt-2 border-t border-slate-900">
+                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Optimize Bullets</h4>
+                      {currentAnalysis.rewritingSuggestions.map((item: any, i: number) => (
+                        <div key={i} className="p-2.5 bg-slate-950/60 border border-slate-900 rounded-xl space-y-2 text-[10px]">
+                          <div>
+                            <span className="text-slate-500 font-semibold uppercase block text-[8px] mb-0.5">AI Suggestion</span>
+                            <p className="text-slate-200 font-medium leading-relaxed italic">"{item.suggested}"</p>
+                          </div>
+                          
+                          <button
+                            onClick={() => {
+                              if (experience.length > 0) {
+                                const lastIndex = experience.length - 1;
+                                const newExp = [...experience];
+                                const currentDetails = newExp[lastIndex].details;
+                                newExp[lastIndex].details = currentDetails ? `${currentDetails}\n•  ${item.suggested}` : `•  ${item.suggested}`;
+                                setExperience(newExp);
+                              }
+                            }}
+                            className="w-full bg-cyan-500/5 hover:bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold py-1.5 rounded-lg text-[9px] text-center transition-all cursor-pointer"
+                          >
+                            Apply to Latest Role
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
