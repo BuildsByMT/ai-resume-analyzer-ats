@@ -139,7 +139,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
 
           const resData = await response.json();
           if (!response.ok || !resData.success) {
-            throw new Error(resData.message || 'Analysis failed. Please check your Gemini API key and try again.');
+            throw new Error(resData.error || resData.message || 'Analysis failed. Please check your Gemini API key and try again.');
           }
 
           setCurrentAnalysis(resData.data);
