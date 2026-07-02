@@ -24,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             <Sparkles size={18} />
           </div>
           <span className="text-xl font-bold tracking-tight text-slate-100">
-            CV<span className="text-gradient font-extrabold">Optimize</span>
+            Resume<span className="text-gradient font-extrabold">Optimizer</span>
           </span>
         </div>
 

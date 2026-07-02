@@ -50,7 +50,7 @@ function App() {
 
       {/* Footer Branding */}
       <footer className="w-full text-center py-6 border-t border-slate-950 text-[10px] text-slate-600 font-semibold tracking-wider uppercase">
-        © 2026 CVOptimize Dashboard. Created by Muzammil Tanveer (tanveermuzammil@gmail.com). All rights reserved. Powered by TiDB Cloud & Gemini AI.
+        © 2026 Resume Optimizer Dashboard. All rights reserved. Powered by TiDB Cloud & Gemini AI.
       </footer>
     </div>
   );

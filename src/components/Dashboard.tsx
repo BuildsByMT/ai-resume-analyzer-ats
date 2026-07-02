@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store';
-import { Upload, Briefcase, Play, Loader2, History, Trash2, ShieldAlert } from 'lucide-react';
+import { Upload, Briefcase, Play, Loader2, History, Trash2, ShieldAlert, User, ExternalLink } from 'lucide-react';
 
 interface DashboardProps {
   setActiveTab: (tab: string) => void;
@@ -263,64 +263,100 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </div>
         </div>
 
-        {/* Right 1 Col: History logs */}
-        <div className="glass-card rounded-2xl p-6 h-fit">
-          <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-900">
-            <History size={18} className="text-cyan-400" />
-            <h3 className="font-bold text-slate-200 text-sm uppercase tracking-wider">Analysis History</h3>
+        {/* Right 1 Col: Sidebar Panel Group */}
+        <div className="space-y-6">
+          {/* History logs Card */}
+          <div className="glass-card rounded-2xl p-6 h-fit">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-900">
+              <History size={18} className="text-cyan-400" />
+              <h3 className="font-bold text-slate-200 text-sm uppercase tracking-wider">Analysis History</h3>
+            </div>
+
+            {!user ? (
+              <div className="text-center py-6">
+                <ShieldAlert size={24} className="mx-auto text-slate-500 mb-2" />
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Log in or sign up to save your resume scans and build an optimization history track.
+                </p>
+              </div>
+            ) : historyAnalyses.length === 0 ? (
+              <p className="text-xs text-slate-500 py-4 text-center">No previous scans found.</p>
+            ) : (
+              <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
+                {historyAnalyses.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      // Fetch full data or set tab directly
+                      setCurrentAnalysis({
+                        overallScore: item.overall_score,
+                        // Note: We can expand this, but for now we set the tab
+                      });
+                      setActiveTab('analysis');
+                    }}
+                    className="p-3 bg-slate-950/60 border border-slate-900 hover:border-slate-800 rounded-xl flex items-center justify-between cursor-pointer group transition-all duration-200"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <h5 className="text-xs font-semibold text-slate-200 truncate">{item.job_title}</h5>
+                      <span className="text-[10px] text-slate-500">
+                        {new Date(item.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                        item.overall_score >= 80 
+                          ? 'bg-emerald-500/10 text-emerald-400' 
+                          : item.overall_score >= 60 
+                            ? 'bg-amber-500/10 text-amber-400' 
+                            : 'bg-rose-500/10 text-rose-400'
+                      }`}>
+                        {item.overall_score}%
+                      </span>
+                      <button
+                        onClick={(e) => handleDeleteHistoryItem(e, item.id)}
+                        className="text-slate-600 hover:text-rose-400 p-1 rounded hover:bg-rose-500/5 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {!user ? (
-            <div className="text-center py-6">
-              <ShieldAlert size={24} className="mx-auto text-slate-500 mb-2" />
+          {/* Founder Profile Card */}
+          <div className="glass-card rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-300"></div>
+            
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-900">
+              <User size={18} className="text-cyan-400" />
+              <h3 className="font-bold text-slate-200 text-sm uppercase tracking-wider">Founder Profile</h3>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-bold text-slate-100">Muzammil Tanveer</h4>
+                <p className="text-xs text-cyan-400 font-medium mt-0.5">Software Engineer & AI Developer</p>
+              </div>
+              
               <p className="text-xs text-slate-400 leading-relaxed">
-                Log in or sign up to save your resume scans and build an optimization history track.
+                Software Engineering student, freelance AI Video Creator, Academic Research Specialist, and Full-Stack Developer.
               </p>
-            </div>
-          ) : historyAnalyses.length === 0 ? (
-            <p className="text-xs text-slate-500 py-4 text-center">No previous scans found.</p>
-          ) : (
-            <div className="space-y-3 max-h-[400px] overflow-y-auto no-scrollbar">
-              {historyAnalyses.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => {
-                    // Fetch full data or set tab directly
-                    setCurrentAnalysis({
-                      overallScore: item.overall_score,
-                      // Note: We can expand this, but for now we set the tab
-                    });
-                    setActiveTab('analysis');
-                  }}
-                  className="p-3 bg-slate-950/60 border border-slate-900 hover:border-slate-800 rounded-xl flex items-center justify-between cursor-pointer group transition-all duration-200"
+
+              <div className="pt-2">
+                <a
+                  href="https://muzammil-murex.vercel.app/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-slate-100 font-semibold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all duration-300 cursor-pointer"
                 >
-                  <div className="min-w-0 pr-2">
-                    <h5 className="text-xs font-semibold text-slate-200 truncate">{item.job_title}</h5>
-                    <span className="text-[10px] text-slate-500">
-                      {new Date(item.created_at).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                      item.overall_score >= 80 
-                        ? 'bg-emerald-500/10 text-emerald-400' 
-                        : item.overall_score >= 60 
-                          ? 'bg-amber-500/10 text-amber-400' 
-                          : 'bg-rose-500/10 text-rose-400'
-                    }`}>
-                      {item.overall_score}%
-                    </span>
-                    <button
-                      onClick={(e) => handleDeleteHistoryItem(e, item.id)}
-                      className="text-slate-600 hover:text-rose-400 p-1 rounded hover:bg-rose-500/5 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  View Personal Portfolio
+                  <ExternalLink size={12} />
+                </a>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

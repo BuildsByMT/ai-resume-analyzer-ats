@@ -34,13 +34,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const ai = new GoogleGenAI({ apiKey });
 
     // 2. Prepare analysis prompts
+    const jdText = jobDescription 
+      ? `Target Job Description: ${jobDescription}` 
+      : `No target job description was provided. Perform a general, high-quality resume compatibility check. Focus on standard software/industry layout compliance, action verb strength, keyword balance, formatting issues, and general structural improvements.`;
+
     const promptText = `
       You are an expert technical recruiter and Applicant Tracking System (ATS) evaluator.
       Analyze the provided resume (PDF document) against the target Job Description (JD).
       Evaluate the match with 100% precision.
 
       Target Job Title: ${jobTitle || 'General Application'}
-      Target Job Description: ${jobDescription || 'Standard resume review'}
+      ${jdText}
 
       Provide your output strictly in JSON format matching this schema:
       {
@@ -72,13 +76,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       model: 'gemini-1.5-flash',
       contents: [
         {
-          inlineData: {
-            data: base64Data,
-            mimeType: 'application/pdf',
-          },
-        },
-        {
-          text: promptText,
+          role: 'user',
+          parts: [
+            { text: promptText },
+            {
+              inlineData: {
+                data: base64Data,
+                mimeType: 'application/pdf',
+              },
+            },
+          ],
         },
       ],
       config: {
