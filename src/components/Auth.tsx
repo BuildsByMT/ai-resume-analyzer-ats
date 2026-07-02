@@ -1,0 +1,192 @@
+import React, { useState } from 'react';
+import { useStore } from '../store';
+import { ShieldCheck, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+
+interface AuthProps {
+  mode: 'login' | 'signup';
+  setActiveTab: (tab: string) => void;
+}
+
+export const Auth: React.FC<AuthProps> = ({ mode, setActiveTab }) => {
+  const { setAuth } = useStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!email || !password) {
+      setErrorMsg('Please fill in all fields.');
+      return;
+    }
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Authentication failed. Please try again.');
+      }
+
+      if (mode === 'login') {
+        setAuth(data.user, data.token);
+        setSuccessMsg('Logged in successfully!');
+        setTimeout(() => {
+          setActiveTab('dashboard');
+        }, 1000);
+      } else {
+        setSuccessMsg('Registration successful! You can now log in.');
+        setTimeout(() => {
+          setActiveTab('login');
+        }, 1500);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Something went wrong.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Background glow highlights */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 rounded-full blur-3xl pointer-events-none bg-glow-glow"></div>
+
+      <div className="glass-card w-full max-w-md rounded-2xl p-8 relative z-10">
+        <div className="text-center mb-8">
+          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 text-cyan-400 mb-4">
+            <ShieldCheck size={28} />
+          </div>
+          <h2 className="text-3xl font-extrabold text-slate-100 tracking-tight">
+            {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+          </h2>
+          <p className="mt-2 text-sm text-slate-400">
+            {mode === 'login' 
+              ? 'Sign in to access your resume grading database' 
+              : 'Sign up to analyze and generate unlimited resumes'}
+          </p>
+        </div>
+
+        {errorMsg && (
+          <div className="mb-4 p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm font-medium animate-in fade-in slide-in-from-top-2 duration-200">
+            {errorMsg}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-4 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm font-medium animate-in fade-in slide-in-from-top-2 duration-200">
+            {successMsg}
+          </div>
+        )}
+
+        <form className="space-y-5" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+              Email Address
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                <Mail size={16} />
+              </span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+              Password
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                <Lock size={16} />
+              </span>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
+              />
+            </div>
+          </div>
+
+          {mode === 'signup' && (
+            <div>
+              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-500">
+                  <Lock size={16} />
+                </span>
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-slate-950/60 border border-slate-900 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group cursor-pointer"
+            >
+              {isLoading ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <>
+                  {mode === 'login' ? 'Log In' : 'Sign Up'}
+                  <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setActiveTab(mode === 'login' ? 'signup' : 'login')}
+            className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
+          >
+            {mode === 'login' 
+              ? "Don't have an account? Sign up" 
+              : 'Already have an account? Log in'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
