@@ -19,6 +19,36 @@
   --color-slate-200: #1e293b;
   --color-slate-100: #0f172a;
   --color-slate-50: #0f172a;
+
+  /* Accent overrides for high readability in light mode */
+  --color-cyan-400: #0891b2; /* cyan-600 */
+  --color-cyan-500: #0e7490; /* cyan-700 */
+  --color-emerald-400: #059669; /* emerald-600 */
+  --color-emerald-500: #047857; /* emerald-700 */
+  --color-purple-400: #7c3aed; /* purple-600 */
+  --color-rose-400: #e11d48; /* rose-600 */
+  --color-amber-400: #d97706; /* amber-600 */
+}
+
+/* Explicit styles to ensure form elements are visible and prominent in light mode */
+:root.light input,
+:root.light textarea,
+:root.light select {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+:root.light input::placeholder,
+:root.light textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+:root.light input:focus,
+:root.light textarea:focus,
+:root.light select:focus {
+  border-color: #0891b2 !important;
+  box-shadow: 0 0 0 1px #0891b2 !important;
 }
 
 body {
@@ -95,4 +125,43 @@ body {
 
 .bg-glow-glow {
   animation: glow-pulse 8s infinite alternate ease-in-out;
+}
+
+/* Gauge Circle Filling Animation */
+@keyframes fill-circle {
+  from {
+    stroke-dashoffset: 377;
+  }
+}
+.animate-circle-fill {
+  animation: fill-circle 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Entry Transitions */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

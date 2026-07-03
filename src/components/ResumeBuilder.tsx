@@ -215,21 +215,64 @@ export const ResumeBuilder: React.FC = () => {
         }
       };
 
-      // Helper to add lines with wrap text and page-break check
-      const addText = (text: string, fontSize: number, isBold = false, spacing = 12) => {
-        doc.setFont('helvetica', isBold ? 'bold' : 'normal');
-        doc.setFontSize(fontSize);
 
-        const lines = doc.splitTextToSize(text, contentWidth);
+      // Helper to draw clean bullet points with a hanging indent
+      const addBullet = (bulletText: string) => {
+        const indent = 12; // Indentation offset for bullet details
+        const cleanText = bulletText.trim().replace(/^•\s*/, '');
         
-        // Page break check
-        if (y + (lines.length * spacing) > doc.internal.pageSize.getHeight() - margin) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        
+        const wrappedLines = doc.splitTextToSize(cleanText, contentWidth - indent);
+        const lineHeight = 11.5;
+        const neededHeight = wrappedLines.length * lineHeight;
+        
+        if (y + neededHeight > doc.internal.pageSize.getHeight() - margin) {
           doc.addPage();
           y = margin;
         }
+        
+        // Draw the bullet character
+        doc.text('•', margin, y);
+        
+        // Draw the indented multiline text block
+        wrappedLines.forEach((line: string, index: number) => {
+          doc.text(line, margin + indent, y + (index * lineHeight));
+        });
+        
+        y += neededHeight + 4;
+      };
 
-        doc.text(lines, margin, y);
-        y += (lines.length * spacing) + 4;
+      // Helper to draw skills with bold labels and properly aligned values
+      const addSkillLine = (label: string, value: string) => {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        const labelWidth = doc.getTextWidth(`${label}: `);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        const wrappedValues = doc.splitTextToSize(value, contentWidth - labelWidth);
+        
+        const lineHeight = 12;
+        const neededHeight = wrappedValues.length * lineHeight;
+        
+        if (y + neededHeight > doc.internal.pageSize.getHeight() - margin) {
+          doc.addPage();
+          y = margin;
+        }
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.text(`${label}:`, margin, y);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        wrappedValues.forEach((line: string, index: number) => {
+          doc.text(line, margin + labelWidth, y + (index * lineHeight));
+        });
+        
+        y += neededHeight + 4;
       };
 
       // Header (Centered Contact Info)
@@ -274,29 +317,25 @@ export const ResumeBuilder: React.FC = () => {
         experience.forEach(exp => {
           if (!exp.company && !exp.role) return;
 
-          // Calculate height needed
-          let neededHeight = 26; // Spacing for headers (12 for role + 14 for company)
-          if (exp.details) {
-            const bulletPoints = exp.details.split('\n').filter(Boolean);
-            bulletPoints.forEach(bullet => {
-              const cleanedBullet = bullet.trim().startsWith('•') 
-                ? bullet.trim() 
-                : `•  ${bullet.trim()}`;
-              const lines = doc.splitTextToSize(cleanedBullet, contentWidth);
-              neededHeight += (lines.length * 11) + 4;
-            });
-            neededHeight += 6;
-          }
-
-          checkPageBreak(neededHeight);
+          checkPageBreak(30);
+          
+          const durationText = exp.duration || 'Date range';
+          const durationWidth = doc.getTextWidth(durationText);
           
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
-          doc.text(exp.role || 'Role', margin, y);
+          
+          const maxRoleWidth = contentWidth - durationWidth - 15;
+          const wrappedRole = doc.splitTextToSize(exp.role || 'Role', maxRoleWidth);
+          
+          wrappedRole.forEach((line: string, index: number) => {
+            doc.text(line, margin, y + (index * 12));
+          });
           
           doc.setFont('helvetica', 'normal');
-          doc.text(exp.duration || 'Date range', pageWidth - margin, y, { align: 'right' });
-          y += 12;
+          doc.text(durationText, pageWidth - margin, y, { align: 'right' });
+          
+          y += (wrappedRole.length * 12);
 
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(9.5);
@@ -306,12 +345,9 @@ export const ResumeBuilder: React.FC = () => {
           if (exp.details) {
             const bulletPoints = exp.details.split('\n').filter(Boolean);
             bulletPoints.forEach(bullet => {
-              const cleanedBullet = bullet.trim().startsWith('•') 
-                ? bullet.trim() 
-                : `•  ${bullet.trim()}`;
-              addText(cleanedBullet, 9, false, 11);
+              addBullet(bullet);
             });
-            y += 6;
+            y += 2;
           }
         });
       }
@@ -322,23 +358,30 @@ export const ResumeBuilder: React.FC = () => {
         education.forEach(edu => {
           if (!edu.school && !edu.degree) return;
 
-          // Calculate height needed
-          let neededHeight = 30; // 12 for degree + 18 for school
+          checkPageBreak(30);
 
-          checkPageBreak(neededHeight);
-
+          const durationText = edu.duration || 'Date range';
+          const durationWidth = doc.getTextWidth(durationText);
+          
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
-          doc.text(edu.degree || 'Degree', margin, y);
+          
+          const maxDegreeWidth = contentWidth - durationWidth - 15;
+          const wrappedDegree = doc.splitTextToSize(edu.degree || 'Degree', maxDegreeWidth);
+          
+          wrappedDegree.forEach((line: string, index: number) => {
+            doc.text(line, margin, y + (index * 12));
+          });
 
           doc.setFont('helvetica', 'normal');
-          doc.text(edu.duration || 'Date range', pageWidth - margin, y, { align: 'right' });
-          y += 12;
+          doc.text(durationText, pageWidth - margin, y, { align: 'right' });
+          
+          y += (wrappedDegree.length * 12);
 
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(9.5);
           doc.text(edu.school || 'School', margin, y);
-          y += 18;
+          y += 16;
         });
       }
 
@@ -348,42 +391,40 @@ export const ResumeBuilder: React.FC = () => {
         projects.forEach(proj => {
           if (!proj.title) return;
 
-          // Calculate height needed
-          let neededHeight = 12; // Header spacing
-          if (proj.details) {
-            const bulletPoints = proj.details.split('\n').filter(Boolean);
-            bulletPoints.forEach(bullet => {
-              const cleanedBullet = bullet.trim().startsWith('•') 
-                ? bullet.trim() 
-                : `•  ${bullet.trim()}`;
-              const lines = doc.splitTextToSize(cleanedBullet, contentWidth);
-              neededHeight += (lines.length * 11) + 4;
-            });
-            neededHeight += 6;
-          }
-
-          checkPageBreak(neededHeight);
+          checkPageBreak(25);
 
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
-          doc.text(proj.title, margin, y);
+          const titleText = proj.title;
+          const techText = proj.tech ? ` [${proj.tech}]` : '';
           
-          if (proj.tech) {
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            doc.text(`  [${proj.tech}]`, margin + doc.getTextWidth(proj.title) + 5, y);
+          const totalWidth = doc.getTextWidth(titleText) + (proj.tech ? doc.getTextWidth(techText) + 5 : 0);
+          
+          if (totalWidth > contentWidth) {
+            doc.text(titleText, margin, y);
+            y += 11;
+            if (proj.tech) {
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(8.5);
+              doc.text(`[${proj.tech}]`, margin, y);
+              y += 11;
+            }
+          } else {
+            doc.text(titleText, margin, y);
+            if (proj.tech) {
+              doc.setFont('helvetica', 'normal');
+              doc.setFontSize(8.5);
+              doc.text(`[${proj.tech}]`, margin + doc.getTextWidth(titleText) + 5, y);
+            }
+            y += 12;
           }
-          y += 12;
 
           if (proj.details) {
             const bulletPoints = proj.details.split('\n').filter(Boolean);
             bulletPoints.forEach(bullet => {
-              const cleanedBullet = bullet.trim().startsWith('•') 
-                ? bullet.trim() 
-                : `•  ${bullet.trim()}`;
-              addText(cleanedBullet, 9, false, 11);
+              addBullet(bullet);
             });
-            y += 6;
+            y += 2;
           }
         });
       }
@@ -393,13 +434,13 @@ export const ResumeBuilder: React.FC = () => {
         addSectionHeading('Technical Skills');
         const presetLabels = industryPresets[selectedPreset];
         if (skills.languages) {
-          addText(`${presetLabels.languages}:  ${skills.languages}`, 9.5, false, 12);
+          addSkillLine(presetLabels.languages, skills.languages);
         }
         if (skills.frameworks) {
-          addText(`${presetLabels.frameworks}:  ${skills.frameworks}`, 9.5, false, 12);
+          addSkillLine(presetLabels.frameworks, skills.frameworks);
         }
         if (skills.tools) {
-          addText(`${presetLabels.tools}:  ${skills.tools}`, 9.5, false, 12);
+          addSkillLine(presetLabels.tools, skills.tools);
         }
       }
 
@@ -1207,29 +1248,43 @@ export const ResumeBuilder: React.FC = () => {
                   {currentAnalysis.rewritingSuggestions?.length > 0 && (
                     <div className="space-y-3 pt-2 border-t border-slate-900">
                       <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Optimize Bullets</h4>
-                      {currentAnalysis.rewritingSuggestions.map((item: any, i: number) => (
-                        <div key={i} className="p-2.5 bg-slate-950/60 border border-slate-900 rounded-xl space-y-2 text-[10px]">
-                          <div>
-                            <span className="text-slate-500 font-semibold uppercase block text-[8px] mb-0.5">AI Suggestion</span>
-                            <p className="text-slate-200 font-medium leading-relaxed italic">"{item.suggested}"</p>
+                      {currentAnalysis.rewritingSuggestions.map((item: any, i: number) => {
+                        const isAlreadyApplied = experience.length > 0 &&
+                          (experience[experience.length - 1].details || '').includes(item.suggested);
+
+                        return (
+                          <div key={i} className="p-2.5 bg-slate-950/60 border border-slate-900 rounded-xl space-y-2 text-[10px]">
+                            <div>
+                              <span className="text-slate-500 font-semibold uppercase block text-[8px] mb-0.5">AI Suggestion</span>
+                              <p className="text-slate-200 font-medium leading-relaxed italic">"{item.suggested}"</p>
+                            </div>
+                            
+                            <button
+                              disabled={isAlreadyApplied}
+                              onClick={() => {
+                                if (experience.length > 0) {
+                                  const lastIndex = experience.length - 1;
+                                  const newExp = [...experience];
+                                  const currentDetails = newExp[lastIndex].details || '';
+                                  if (!currentDetails.includes(item.suggested)) {
+                                    newExp[lastIndex].details = currentDetails
+                                      ? `${currentDetails.trim()}\n•  ${item.suggested}`
+                                      : `•  ${item.suggested}`;
+                                    setExperience(newExp);
+                                  }
+                                }
+                              }}
+                              className={`w-full font-semibold py-1.5 rounded-lg text-[9px] text-center transition-all ${
+                                isAlreadyApplied
+                                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 cursor-not-allowed'
+                                  : 'bg-cyan-500/5 hover:bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 cursor-pointer'
+                              }`}
+                            >
+                              {isAlreadyApplied ? '✓ Applied' : 'Apply to Latest Role'}
+                            </button>
                           </div>
-                          
-                          <button
-                            onClick={() => {
-                              if (experience.length > 0) {
-                                const lastIndex = experience.length - 1;
-                                const newExp = [...experience];
-                                const currentDetails = newExp[lastIndex].details;
-                                newExp[lastIndex].details = currentDetails ? `${currentDetails}\n•  ${item.suggested}` : `•  ${item.suggested}`;
-                                setExperience(newExp);
-                              }
-                            }}
-                            className="w-full bg-cyan-500/5 hover:bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-semibold py-1.5 rounded-lg text-[9px] text-center transition-all cursor-pointer"
-                          >
-                            Apply to Latest Role
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>

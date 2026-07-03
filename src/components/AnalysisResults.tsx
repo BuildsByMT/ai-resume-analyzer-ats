@@ -35,7 +35,6 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
 
   const { overallScore, breakdown, keywords, formattingIssues, rewritingSuggestions } = currentAnalysis;
   const scoreColor = overallScore >= 80 ? 'text-emerald-400' : overallScore >= 60 ? 'text-amber-400' : 'text-rose-400';
-  const scoreBorderColor = overallScore >= 80 ? 'border-emerald-500/20' : overallScore >= 60 ? 'border-amber-500/20' : 'border-rose-500/20';
 
   return (
     <div className="max-w-[1600px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -55,11 +54,34 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
         <div className="glass-card rounded-2xl p-6 flex flex-col items-center text-center h-fit">
           <h3 className="text-sm font-bold text-slate-300 uppercase tracking-wider mb-6">ATS Match Score</h3>
 
-          {/* Radial score gauge */}
-          <div className={`relative w-36 h-36 rounded-full border-8 flex items-center justify-center ${scoreBorderColor} mb-6`}>
-            <div className="text-center">
+          {/* Radial score gauge (Animated SVG Circular Progress) */}
+          <div className="relative w-36 h-36 flex items-center justify-center mb-6">
+            <svg className="w-full h-full transform -rotate-90">
+              {/* Background Circle */}
+              <circle
+                cx="72"
+                cy="72"
+                r="60"
+                className="stroke-slate-900/60"
+                strokeWidth="8"
+                fill="transparent"
+              />
+              {/* Animated Foreground Progress Circle */}
+              <circle
+                cx="72"
+                cy="72"
+                r="60"
+                className={`stroke-current ${scoreColor} animate-circle-fill`}
+                strokeWidth="8"
+                fill="transparent"
+                strokeDasharray={377}
+                strokeDashoffset={377 - (377 * (overallScore || 0)) / 100}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute text-center">
               <span className={`text-4xl font-extrabold tracking-tight ${scoreColor}`}>{overallScore || 0}</span>
-              <span className="text-slate-500 text-xs block mt-0.5">% Match</span>
+              <span className="text-slate-500 text-[10px] font-bold block uppercase mt-0.5">% Match</span>
             </div>
           </div>
 
@@ -164,7 +186,11 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
                 {keywords?.matched?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {keywords.matched.map((kw: string, i: number) => (
-                      <span key={i} className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg">
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium rounded-lg animate-scale-in"
+                        style={{ animationDelay: `${i * 40}ms` }}
+                      >
                         {kw}
                       </span>
                     ))}
@@ -182,7 +208,11 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
                 {keywords?.missing?.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {keywords.missing.map((kw: string, i: number) => (
-                      <span key={i} className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium rounded-lg">
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium rounded-lg animate-scale-in"
+                        style={{ animationDelay: `${i * 40}ms` }}
+                      >
                         {kw}
                       </span>
                     ))}
@@ -201,7 +231,11 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
               {formattingIssues && formattingIssues.length > 0 ? (
                 <div className="space-y-3">
                   {formattingIssues.map((issue: string, i: number) => (
-                    <div key={i} className="flex gap-3 p-3.5 bg-rose-500/5 border border-rose-500/10 rounded-xl text-xs text-rose-400 leading-relaxed">
+                    <div
+                      key={i}
+                      className="flex gap-3 p-3.5 bg-rose-500/5 border border-rose-500/10 rounded-xl text-xs text-rose-400 leading-relaxed animate-slide-up"
+                      style={{ animationDelay: `${i * 100}ms` }}
+                    >
                       <AlertTriangle size={16} className="shrink-0 mt-0.5" />
                       <span>{issue}</span>
                     </div>
@@ -221,7 +255,11 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
             <div className="space-y-4 animate-in fade-in duration-200">
               {rewritingSuggestions && rewritingSuggestions.length > 0 ? (
                 rewritingSuggestions.map((item: any, i: number) => (
-                  <div key={i} className="glass-card rounded-2xl p-5 space-y-3">
+                  <div
+                    key={i}
+                    className="glass-card rounded-2xl p-5 space-y-3 animate-slide-up"
+                    style={{ animationDelay: `${i * 150}ms` }}
+                  >
                     <div className="flex items-start justify-between">
                       <span className="text-[10px] font-semibold text-cyan-400 uppercase tracking-widest px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded">
                         Suggestion #{i + 1}
