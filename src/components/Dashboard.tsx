@@ -13,6 +13,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,10 +74,15 @@ export const Dashboard: React.FC<DashboardProps> = () => {
     }
   };
 
-  const handleDeleteHistoryItem = async (e: React.MouseEvent, id: string) => {
+  const handleDeleteHistoryItem = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (!token) return;
-    if (!confirm('Are you sure you want to delete this history item?')) return;
+    setItemToDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDeleteId || !token) return;
+    const id = itemToDeleteId;
+    setItemToDeleteId(null);
     
     try {
       const response = await fetch('/api/resumes', {
@@ -389,6 +395,39 @@ export const Dashboard: React.FC<DashboardProps> = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Custom Modal */}
+      {itemToDeleteId && (
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="glass-card max-w-sm w-full rounded-2xl p-6 border border-rose-500/20 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300">
+            <div className="absolute -right-10 -top-10 w-24 h-24 bg-gradient-to-tr from-rose-500/10 to-amber-500/10 rounded-full blur-2xl"></div>
+            
+            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-900">
+              <ShieldAlert className="text-rose-500 animate-pulse" size={20} />
+              <h3 className="font-bold text-slate-200 text-xs uppercase tracking-wider">Delete History Item</h3>
+            </div>
+            
+            <p className="text-xs text-slate-400 leading-relaxed mb-6">
+              Are you sure you want to delete this history item? This action cannot be undone.
+            </p>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setItemToDeleteId(null)}
+                className="flex-1 px-4 py-2 bg-slate-900 border border-slate-800 text-slate-300 font-semibold text-xs rounded-xl hover:text-slate-100 hover:border-slate-700 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-rose-500 to-amber-500 text-slate-950 font-bold text-xs rounded-xl hover:opacity-95 shadow-md shadow-rose-500/10 transition-all cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
