@@ -5,13 +5,16 @@
 The dashboard features a modern, premium dark-themed glassmorphism interface. 
 
 #### Color Palette (Tailwind Configuration):
-- **Background:** Deep Navy/Slate (`bg-slate-950`)
-- **Card Background:** Semi-transparent Slate (`bg-slate-900/60` with `backdrop-blur-md`)
-- **Primary Accent:** Electric Cyan / Emerald Gradient (`from-cyan-500 to-emerald-500`)
-- **Secondary Accent:** Slate Grey (`border-slate-800`, `text-slate-400`)
-- **Success:** Emerald (`text-emerald-400`)
-- **Warning:** Amber (`text-amber-400`)
-- **Error:** Rose (`text-rose-400`)
+- **Background:** Deep Navy/Slate (`bg-slate-950`), swaps to light gray (`#f8fafc`) in light mode.
+- **Card Background:** Semi-transparent Slate (`bg-slate-900/60` with `backdrop-blur-md`), swaps to semi-transparent white in light mode.
+- **Primary Accent:** Electric Cyan / Emerald Gradient (`from-cyan-500 to-emerald-500`). Swaps to darker, highly visible variants (`#0891b2` / `#059669`) in light mode to maintain contrast.
+- **Secondary Accent:** Slate Grey (`border-slate-800`, `text-slate-400`).
+- **Success:** Emerald (`text-emerald-400`), swaps to green-600 (`#059669`) in light mode.
+- **Warning:** Amber (`text-amber-400`), swaps to amber-600 (`#d97706`) in light mode.
+- **Error:** Rose (`text-rose-400`), swaps to rose-600 (`#e11d48`) in light mode.
+
+#### Form Controls (Light Mode Visibility):
+- Inputs, selects, and textareas are styled with solid white background (`#ffffff`), soft gray borders (`#cbd5e1`), and dark slate text (`#0f172a`) to ensure prominence.
 
 #### Typography:
 - **Font Family:** Inter or Outfit (loaded via Google Fonts)
@@ -20,24 +23,26 @@ The dashboard features a modern, premium dark-themed glassmorphism interface.
 ---
 
 ### 2. Router & Pages Map
-The client-side routing is handled via `react-router-dom`:
+The client-side routing is handled via hash routing:
 
-1. **`/login` / `/signup` (Auth Pages):**
+1. **`#/login` / `#/signup` (Auth Pages):**
    - Centered glassmorphic card for credential inputs.
    - Smooth animated background glow.
-2. **`/dashboard` (Main Dashboard Home):**
+2. **`#/dashboard` (Main Dashboard Home):**
    - Grid layout showing summary cards (Previous Resumes uploaded, average ATS scores, recent jobs checked).
    - Drag-and-Drop file uploader.
    - Text area for pasting the Job Description.
    - "Analyze Resume" primary CTA with glowing hover effect.
-3. **`/analyze/:id` (Analysis View):**
+   - **Guest Mode Promotion Card:** Rendered below the Founder Profile Card in the sidebar when the user is not logged in. Highlights features (ATS CV Creator, AI Assistant, Exports) and prompts sign up.
+   - **Custom Delete Confirmation Modal:** Intercepts delete actions, prompting user with a themed glassmorphic dialog instead of the browser native popup.
+3. **`#/analysis` (Analysis View):**
    - Left Panel: The uploaded/original resume text.
    - Right Panel: Interactive score display (Radial progress chart) and tabs for:
      - *Key Skill Match:* Matched vs. Missing skills shown in badges.
      - *Grammar & Action Verbs:* Highlighting passive voice or weak phrasing.
      - *Formatting Report:* Checklist of ATS compliance standards.
      - *AI Rewriting:* Cards showing side-by-side "Original" vs "ATS Optimized" bullet points.
-4. **`/creator` (ATS Resume Builder):**
+4. **`#/creator` (ATS Resume Builder):**
    - Multi-step wizard form (Step 1: Contact, Step 2: Experience, Step 3: Education, Step 4: Skills, Step 5: Projects).
    - Real-time previews of the text layout.
    - "Generate & Download ATS Resume" primary CTA.
@@ -62,7 +67,8 @@ We will use `zustand` for lightweight state management.
 ---
 
 ### 4. Interactive Flow & Animations
-- **File Upload:** Smooth hover states on drag-over, animated progress bar during parsing.
-- **Score Reveal:** Radial gauge runs an incrementing counting animation from `0` to the actual score on mount.
-- **Form Actions:** Drag-and-drop ordering for work experience list items.
-- **Transitions:** Page routing transitions use `framer-motion` for a fade-in-slide effect.
+- **File Upload:** Smooth hover states on drag-over, uploader animation during parsing.
+- **SVG Radial Gauge:** Circular progress path utilizing `stroke-dashoffset` keyframe transition (`fill-circle`) to animate-fill the score from 0% to the matching overall percentage.
+- **Staggered Entry transitions:** Uses CSS scale-in and slide-up animations with calculated animation delays (`style={{ animationDelay: '...' }}`) for staggered entries on keyword chips, checklist rows, and AISuggestions cards.
+- **AI CV Assistant:** Keeps track of whether suggestions are already applied. Disables the button and shows "✓ Applied" to prevent duplicate bullet additions.
+- **Modals:** Custom React modal components styled with glassmorphic cards and fade/scale transitions, avoiding native browser interrupt block alerts.

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store';
-import { Upload, Briefcase, Play, Loader2, History, Trash2, ShieldAlert, User, ExternalLink } from 'lucide-react';
+import { Upload, Briefcase, Play, Loader2, History, Trash2, ShieldAlert, User, ExternalLink, Sparkles } from 'lucide-react';
 
 interface DashboardProps {}
 
@@ -393,6 +393,46 @@ export const Dashboard: React.FC<DashboardProps> = () => {
               </div>
             </div>
           </div>
+
+          {/* Guest Signup CTA Card */}
+          {!token && (
+            <div className="glass-card rounded-2xl p-5 border border-cyan-500/20 relative overflow-hidden group animate-slide-up">
+              <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-gradient-to-tr from-cyan-500/10 to-purple-500/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-300"></div>
+              
+              <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-slate-900">
+                <Sparkles size={16} className="text-cyan-400 animate-pulse" />
+                <h3 className="font-bold text-slate-200 text-xs uppercase tracking-wider">Unlock Premium ATS Creator</h3>
+              </div>
+
+              <div className="space-y-3.5">
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Join for free to access advanced tools and build resume files that score highly on applicant scanners.
+                </p>
+
+                <ul className="space-y-2 text-[10px] text-slate-300 font-medium">
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-emerald-400 shrink-0">✓</span>
+                    <span><strong>ATS CV Creator:</strong> Create formatted single-column resumes.</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-emerald-400 shrink-0">✓</span>
+                    <span><strong>AI CV Assistant:</strong> Optimize bullet points and add missing job keywords in real-time.</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-emerald-400 shrink-0">✓</span>
+                    <span><strong>Word & PDF Exports:</strong> Download clean ATS-compliant Word (.doc) and PDF files.</span>
+                  </li>
+                </ul>
+
+                <button
+                  onClick={() => { window.location.hash = '#/signup'; }}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1 hover:opacity-95 shadow-md shadow-cyan-500/10 transition-all cursor-pointer"
+                >
+                  Create Free Account
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

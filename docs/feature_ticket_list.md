@@ -66,3 +66,32 @@ Below is the structured task list divided into 5 sprints. These tickets define t
 #### Ticket 5.2: End-to-End System Testing & Verification
 - **Description:** Test the parser against 5 sample resumes. Ensure PDF text is 100% extractable. Check responsive design.
 - **Deliverables:** Successful testing reports for core flows.
+
+---
+
+### Sprint 6: Enhancements, Animations & UX Polish (Completed)
+
+#### Ticket 6.1: PDF Overlap & Hanging Indent Fixes
+- **Description:** Fix the text overlap in project titles, experience headers, and education blocks. Implement hanging indents for wrapped bullet points and bold labels for technical skills.
+- **Deliverables:** Upgraded jsPDF layout generation code in `ResumeBuilder.tsx` with dynamic wrapping and padding.
+
+#### Ticket 6.2: Score Gauge Radial Circle Animation
+- **Description:** Replace the static borders of the match score radial gauge with an animated SVG circular progress circle.
+- **Deliverables:** Smooth SVG progress circle inside `AnalysisResults.tsx` animating on mount over 1.5s.
+
+#### Ticket 6.3: Light Mode Theme Visibility & High Contrast Overrides
+- **Description:** Optimize light mode contrast. Swapped bright accent variables for darker variants and specifically styled inputs/selects to use white backgrounds with clear gray borders.
+- **Deliverables:** Light theme enhancements in `index.css` ensuring WCAG contrast compliance.
+
+#### Ticket 6.4: AI Assistant Duplicate Suggestion Check
+- **Description:** Check if a suggested bullet is already present in the latest work experience details block. If yes, disable the button and show "Applied".
+- **Deliverables:** State check and disabled/Applied visual button state in the CV assistant sidebar in `ResumeBuilder.tsx`.
+
+#### Ticket 6.5: Custom Glassmorphic Delete Confirmation Modal
+- **Description:** Replace native browser `confirm()` modal with a custom glassmorphic warning modal when deleting a history item.
+- **Deliverables:** React dialog modal inside `Dashboard.tsx` with backdrop blur, alert icon, and Cancel/Delete actions.
+
+#### Ticket 6.6: Guest Mode Signup Call-To-Action (CTA) Card
+- **Description:** Add a high-converting promotion box below the founder profile card in the sidebar for unauthenticated users.
+- **Deliverables:** Promotion glassmorphic card in `Dashboard.tsx` with clear value propositions and a "Create Free Account" button.
+

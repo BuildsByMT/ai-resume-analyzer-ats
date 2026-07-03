@@ -396,9 +396,17 @@ export const ResumeBuilder: React.FC = () => {
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(10);
           const titleText = proj.title;
+          const titleWidth = doc.getTextWidth(titleText);
           const techText = proj.tech ? ` [${proj.tech}]` : '';
           
-          const totalWidth = doc.getTextWidth(titleText) + (proj.tech ? doc.getTextWidth(techText) + 5 : 0);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8.5);
+          const techWidth = doc.getTextWidth(techText);
+          
+          const totalWidth = titleWidth + (proj.tech ? techWidth + 5 : 0);
+          
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
           
           if (totalWidth > contentWidth) {
             doc.text(titleText, margin, y);
@@ -414,7 +422,7 @@ export const ResumeBuilder: React.FC = () => {
             if (proj.tech) {
               doc.setFont('helvetica', 'normal');
               doc.setFontSize(8.5);
-              doc.text(`[${proj.tech}]`, margin + doc.getTextWidth(titleText) + 5, y);
+              doc.text(`[${proj.tech}]`, margin + titleWidth + 5, y);
             }
             y += 12;
           }

@@ -8,6 +8,15 @@
 - **Client Storage:** The JWT will be stored in the browser's `localStorage` or inside a secure, `httpOnly` cookie to prevent Cross-Site Scripting (XSS) access.
 - **Password Hashing:** User passwords will be salted and hashed using `bcryptjs` (with a work factor of 10) before being persisted to the TiDB database. Raw passwords are never stored.
 
+#### Authorization Scopes (Guest Mode vs. Logged-in Mode):
+- **Guest Mode (Unauthenticated):**
+  - Users can run resume scans and ATS evaluations on-the-fly.
+  - **No Database Persistence:** Guest data is processed entirely in-memory and is never written to the TiDB database.
+  - **Restricted Access:** The ATS CV Creator form actions, saving history logs, and interactive cloud saves are disabled. A glassmorphic Guest Promotion Card is shown in the dashboard sidebar to encourage signup.
+- **Logged-in Mode (Authenticated):**
+  - Full access to the ATS CV Creator, AI CV Assistant, and interactive score integrations.
+  - All scans and resume builder forms are saved securely to the database.
+
 ---
 
 ### 2. Database & API Security
@@ -40,8 +49,10 @@ The system supports two methods of utilizing the Gemini API Key:
 ### 4. Data Privacy & GDPR Guidelines
 Resumes contain highly sensitive PII (Personally Identifiable Information) such as names, phone numbers, home addresses, and employment histories.
 - **No Disk Caching:** The Vercel Serverless Function processes resume files entirely in-memory. No PDF files are saved to the server's local file system.
-- **Database Storage Encryption:** Users have the option to save their resume details to their history. The PDF base64 data stored in TiDB will be restricted to authorized users via SQL matching:
+- **Guest Isolation:** Guest scans are executed strictly in-memory and are never stored in the database.
+- **Database Storage Encryption & Scoped Querying:** Authenticated users have the option to save resume details. The database base64 data stored in TiDB is strictly restricted via SQL owner matching:
   ```sql
   SELECT * FROM resumes WHERE user_id = ? AND id = ?
   ```
-- **Optional Right-to-Forget:** The dashboard will feature a "Delete Account" button that triggers a cascade delete in the database, removing the user, all uploaded resumes, and history data.
+- **Secure Deletions:** Deleting items from the Analysis History uses a custom glassmorphic warning modal (Dashboard.tsx) to prevent accidental calls. Upon confirmation, the deletion executes immediately on TiDB, and the cached logs are cleared from memory.
+- **Optional Right-to-Forget:** The dashboard features a "Delete Account" option that triggers a cascade delete, removing the user row and all associated resumes and scans.

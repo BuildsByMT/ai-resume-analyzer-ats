@@ -115,5 +115,22 @@ Provide your output strictly in JSON format matching this schema:
 
 ### 5. Client-Side PDF Generation Strategy
 To avoid server-side overhead and rendering timeouts, the PDF is compiled directly in the browser using the `jspdf` library:
-- **Style Constraints:** Single-column layout, standard margins (0.75 inch), clean font hierarchy (Helvetica or Arial), no graphic dividers, and no icons (which disrupt ATS parsing engines).
-- **Process:** The user fills the form, and the React client compiles it into a plain text flow directly drawn onto the PDF canvas.
+- **Style Constraints:** Single-column layout, standard margins (0.75 inch / 54pt), clean font hierarchy (Helvetica or Arial), no graphic dividers, and no icons (which disrupt ATS parsing engines).
+- **Hanging Indent Bullet Blocks:**
+  Multi-line bullet details are split and drawn with a hanging indent. The bullet character (`•`) is rendered at the left margin, and text blocks are split to size (`contentWidth - 12pt`) and rendered at `margin + 12pt`.
+- **Dynamic Text Wrapping & Alignment**:
+  - Job titles (roles) and degrees are dynamically measured (`doc.getTextWidth`) and wrapped using `doc.splitTextToSize` so they never overlap right-aligned date ranges.
+  - Project technologies are dynamically wrapped and placed either side-by-side or on a separate line based on combined width measurements.
+  - Technical skills are rendered with bold labels (e.g. **Languages:**) and adjacent values wrap and align next to them in a clean block.
+
+---
+
+### 6. UX & Interactive Flow Enhancements
+- **Radial Score Animation**:
+  The Match Score Gauge uses an SVG-based circular progress bar. The outer indicator ring animates on mount using a CSS transition keyframe (`fill-circle`) that translates a percentage value to a `stroke-dashoffset` offset.
+- **Staggered Animations**:
+  Keywords and checklist results list containers apply scale-in and slide-up animations. Individual elements stagger their transition start times using CSS variables mapping inline `animationDelay` offsets.
+- **Custom Modals**:
+  Accidental data deletions (e.g., deleting history entries) are intercepted by a themed, glassmorphic custom modal instead of a native browser popup. The modal uses state tracking (`itemToDeleteId`) and backdrop blur to focus the confirmation action.
+- **Guest Promotion Card**:
+  Conditionally displayed on the dashboard when `!token` is active. Highlights key signup value propositions and provides a direct route to the registration screen.
