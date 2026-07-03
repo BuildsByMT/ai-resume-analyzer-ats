@@ -273,6 +273,53 @@ export const Dashboard: React.FC<DashboardProps> = () => {
               </button>
             </div>
           </div>
+
+          {/* Guest Signup CTA Card */}
+          {!token && (
+            <div className="glass-card rounded-2xl p-6 border border-cyan-500/20 relative overflow-hidden group animate-slide-up bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5">
+              <div className="absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-tr from-cyan-500/10 to-purple-500/10 rounded-full blur-2xl"></div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                {/* Left side: Text & Description */}
+                <div className="md:col-span-2 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={16} className="text-cyan-400 animate-pulse" />
+                    <h3 className="font-extrabold text-slate-100 text-sm uppercase tracking-wider">Unlock Premium ATS CV Creator & Assistant</h3>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed max-w-2xl">
+                    Create a free account to unlock our scanner-friendly resume builder, live AI-powered bullet suggestions, and cloud tracking features.
+                  </p>
+                  
+                  {/* Detailed benefits row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-[10px] text-slate-300 font-medium">
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-emerald-400 shrink-0 font-bold">✓</span>
+                      <span><strong>ATS CV Creator:</strong> Create formatted single-column resumes.</span>
+                    </div>
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-emerald-400 shrink-0 font-bold">✓</span>
+                      <span><strong>AI CV Assistant:</strong> Optimize bullet points and add missing job keywords in real-time.</span>
+                    </div>
+                    <div className="flex items-start gap-1.5">
+                      <span className="text-emerald-400 shrink-0 font-bold">✓</span>
+                      <span><strong>Word & PDF Exports:</strong> Download clean ATS-compliant Word (.doc) and PDF files.</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Right side: Button CTA */}
+                <div className="flex flex-col items-center justify-center p-2 border-t md:border-t-0 md:border-l border-slate-900/60 md:pl-6">
+                  <button
+                    onClick={() => { window.location.hash = '#/signup'; }}
+                    className="w-full max-w-[220px] bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1 hover:opacity-95 shadow-md shadow-cyan-500/10 hover:shadow-cyan-500/20 transition-all cursor-pointer"
+                  >
+                    Create Free Account
+                  </button>
+                  <span className="text-[9px] text-slate-500 mt-2 font-medium">No credit card required. Free forever.</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right 1 Col: Sidebar Panel Group */}
@@ -394,45 +441,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
             </div>
           </div>
 
-          {/* Guest Signup CTA Card */}
-          {!token && (
-            <div className="glass-card rounded-2xl p-4 border border-cyan-500/20 relative overflow-hidden group animate-slide-up">
-              <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-gradient-to-tr from-cyan-500/10 to-purple-500/10 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-300"></div>
-              
-              <div className="flex items-center gap-2 mb-2.5 pb-2 border-b border-slate-900">
-                <Sparkles size={14} className="text-cyan-400 animate-pulse" />
-                <h3 className="font-bold text-slate-200 text-[11px] uppercase tracking-wider">Unlock Premium ATS Creator</h3>
-              </div>
 
-              <div className="space-y-3">
-                <p className="text-[10px] text-slate-400 leading-relaxed">
-                  Join for free to access advanced tools and build resume files that score highly on applicant scanners.
-                </p>
-
-                <ul className="space-y-1.5 text-[10px] text-slate-300 font-medium">
-                  <li className="flex items-start gap-1.5">
-                    <span className="text-emerald-400 shrink-0 font-bold">✓</span>
-                    <span>Scanner-friendly, single-column templates</span>
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <span className="text-emerald-400 shrink-0 font-bold">✓</span>
-                    <span>Interactive AI bullet & keyword optimizer</span>
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <span className="text-emerald-400 shrink-0 font-bold">✓</span>
-                    <span>Cloud drafts & clean Word/PDF downloads</span>
-                  </li>
-                </ul>
-
-                <button
-                  onClick={() => { window.location.hash = '#/signup'; }}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 hover:opacity-95 shadow-md shadow-cyan-500/10 transition-all cursor-pointer"
-                >
-                  Create Free Account
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
