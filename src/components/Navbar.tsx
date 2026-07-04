@@ -24,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab }) => {
             <FileText size={16} className="sm:w-[18px] sm:h-[18px]" />
           </div>
           <span className="text-base sm:text-xl font-bold tracking-tight text-slate-100">
-            Resume<span className="hidden sm:inline text-gradient font-extrabold">Optimizer</span>
+            Resume<span className="text-gradient font-extrabold">Optimizer</span>
           </span>
         </div>
 
