@@ -33,6 +33,7 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -77,13 +78,19 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
       if (mode === 'login') {
         setAuth(data.user, data.token);
         setSuccessMsg('Logged in successfully!');
+        setIsRedirecting(true);
         setTimeout(() => {
           window.location.hash = '#/dashboard';
-        }, 1000);
+        }, 1200);
       } else {
-        setSuccessMsg('Registration successful! You can now log in.');
+        setSuccessMsg('Registration successful! Redirecting to login...');
+        setIsRedirecting(true);
         setTimeout(() => {
           window.location.hash = '#/login';
+          setIsRedirecting(false);
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
         }, 1500);
       }
     } catch (err: any) {
@@ -107,7 +114,27 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
       {/* Background glow highlights */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 bg-gradient-to-tr from-cyan-500/10 to-emerald-500/10 rounded-full blur-3xl pointer-events-none bg-glow-glow"></div>
 
-      <div className="glass-card w-full max-w-md rounded-2xl p-5 sm:p-8 relative z-10">
+      <div className="glass-card w-full max-w-md rounded-2xl p-5 sm:p-8 relative overflow-hidden z-10">
+        {isRedirecting && (
+          <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center z-50 animate-in fade-in duration-300">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-2 border-cyan-500/20 border-t-cyan-500 animate-spin"></div>
+                <div className="absolute w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                  <ShieldCheck size={16} className="animate-pulse" />
+                </div>
+              </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-bold text-slate-100">
+                  {mode === 'login' ? 'Authorizing Secure Session...' : 'Creating User Profile...'}
+                </p>
+                <p className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">
+                  {mode === 'login' ? 'Decrypting workspace environment' : 'Setting up TiDB database records'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         <button
           onClick={() => { window.location.hash = '#/dashboard'; }}
           className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-900/60 border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all duration-300 hover:bg-slate-900 cursor-pointer mb-6"

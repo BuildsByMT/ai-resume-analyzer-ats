@@ -50,6 +50,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       await db.execute('ALTER TABLE analyses ADD COLUMN formatting_issues JSON');
     } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE analyses ADD COLUMN page_optimization JSON');
+    } catch (_) {}
 
     return res.status(200).json({ success: true, message: 'Database tables initialized successfully in TiDB Cloud.' });
   } catch (error: any) {

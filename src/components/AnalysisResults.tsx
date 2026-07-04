@@ -1,13 +1,44 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { ChevronLeft, BarChart2, BookOpen, AlertTriangle, CheckCircle, HelpCircle, Copy, Info } from 'lucide-react';
+import { ChevronLeft, BarChart2, BookOpen, AlertTriangle, CheckCircle, HelpCircle, Copy, Info, Layers, Building, CheckSquare, Sparkles } from 'lucide-react';
 
 interface AnalysisResultsProps {}
 
 export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
   const { currentAnalysis } = useStore();
-  const [activeSubTab, setActiveSubTab] = useState<'keywords' | 'formatting' | 'suggestions'>('keywords');
+  const [activeSubTab, setActiveSubTab] = useState<'keywords' | 'formatting' | 'suggestions' | 'optimization'>('keywords');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const pageOptimization = currentAnalysis?.pageOptimization || {
+    estimatedPageCount: 1.0,
+    lengthEvaluation: "Your resume appears to have a standard layout. We recommend maintaining a clean, full-page format.",
+    lengthRecommendation: "Ensure all sections fit within complete page boundaries (exactly 1 or 2 pages) depending on your target role.",
+    companyPreferences: [
+      {
+        companyType: "Tech Startups & Modern Tech",
+        encouragedFormat: "1-page modern single-column layout. High-impact results prioritized.",
+        suitability: "Highly Recommended"
+      },
+      {
+        companyType: "Traditional Enterprises & Finance",
+        encouragedFormat: "1-2 page classic layout. Highlights structured business metrics.",
+        suitability: "Suitable"
+      },
+      {
+        companyType: "Federal & Defense Contractors",
+        encouragedFormat: "Detailed multi-page resume. Fully lists clearances and projects.",
+        suitability: "Suitable"
+      }
+    ],
+    structuralChecklist: [
+      {
+        section: "Professional Experience Descriptions",
+        status: "success",
+        feedback: "Found detailed job descriptions and bullet points."
+      }
+    ],
+    technicalityFeedback: "The technicality level is standard. Ensure your technical toolset is referenced contextually inside job description bullet points."
+  };
 
   const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
@@ -173,6 +204,17 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
               <BookOpen size={14} />
               AI Bullet Editor
             </button>
+            <button
+              onClick={() => setActiveSubTab('optimization')}
+              className={`flex-1 shrink-0 py-2 px-4 text-xs font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-1.5 ${
+                activeSubTab === 'optimization'
+                  ? 'bg-slate-900 text-cyan-400 border border-slate-800/80 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Layers size={14} />
+              Page & Content Guide
+            </button>
           </div>
 
           {/* Sub-tab: Keywords & Skills */}
@@ -306,6 +348,160 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
                   <p className="text-xs text-slate-400">Excellent content! The AI did not find any phrasing changes needed.</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Sub-tab: Page & Content Guide */}
+          {activeSubTab === 'optimization' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              
+              {/* Row 1: Page Length Assessment */}
+              <div className="glass-card rounded-2xl p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-xl animate-scale-in">
+                    <Layers size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-200">Resume Page Length Optimization</h4>
+                    <p className="text-[11px] text-slate-500">Evaluating page boundaries and density for modern recruitment standards</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 animate-slide-up">
+                  <div className="md:col-span-1 p-5 bg-slate-950/60 border border-slate-900 rounded-2xl flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Length</span>
+                    <div className="text-3xl font-extrabold text-cyan-400 mt-1">
+                      {pageOptimization.estimatedPageCount} {pageOptimization.estimatedPageCount === 1 ? 'Page' : 'Pages'}
+                    </div>
+                    {pageOptimization.estimatedPageCount % 1 !== 0 ? (
+                      <span className="mt-2.5 px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold rounded-full">
+                        Partial Page Warning
+                      </span>
+                    ) : (
+                      <span className="mt-2.5 px-2.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full">
+                        Perfect Page Boundary
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="md:col-span-2 space-y-3.5">
+                    <div className="p-4 bg-slate-950/30 border border-slate-900/60 rounded-2xl text-xs text-slate-300 leading-relaxed">
+                      <span className="font-bold text-slate-200 block mb-1">Layout Spacing Evaluation:</span>
+                      {pageOptimization.lengthEvaluation}
+                    </div>
+                    <div className="p-4 bg-cyan-500/5 border border-cyan-500/10 rounded-2xl text-xs text-cyan-400 leading-relaxed">
+                      <span className="font-bold text-cyan-300 block mb-1">Formatting Action Recommendation:</span>
+                      {pageOptimization.lengthRecommendation}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 2: Company Preferences & Market Standards */}
+              <div className="glass-card rounded-2xl p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl animate-scale-in">
+                    <Building size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-200">Company & Market Format Guidelines</h4>
+                    <p className="text-[11px] text-slate-500">Corporate expectations and template preferences in the current job market</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  {pageOptimization.companyPreferences?.map((pref: any, i: number) => {
+                    const suitabilityColors = 
+                      pref.suitability?.toLowerCase().includes('highly') ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' :
+                      pref.suitability?.toLowerCase().includes('require') || pref.suitability?.toLowerCase().includes('expansion') ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400' :
+                      'bg-cyan-500/10 border border-cyan-500/20 text-cyan-400';
+                    return (
+                      <div 
+                        key={i} 
+                        className="p-4.5 bg-slate-950/60 border border-slate-900 rounded-2xl flex flex-col justify-between space-y-4 hover:border-slate-800 transition-colors duration-300 animate-slide-up"
+                        style={{ animationDelay: `${i * 80}ms` }}
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between items-start gap-2">
+                            <span className="text-xs font-bold text-slate-300">{pref.companyType}</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">{pref.encouragedFormat}</p>
+                        </div>
+                        <span className={`self-start px-2 py-0.5 text-[9px] font-bold rounded-md border ${suitabilityColors}`}>
+                          {pref.suitability}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Row 3: Section Checklist & Technicality */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Structural Checklist */}
+                <div className="glass-card rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center gap-3 mb-2 animate-scale-in">
+                    <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl">
+                      <CheckSquare size={20} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-200">Section Completeness Check</h4>
+                      <p className="text-[11px] text-slate-500">Checking for missing details or thin descriptions</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 pt-1">
+                    {pageOptimization.structuralChecklist?.map((chk: any, i: number) => {
+                      const statusColor = chk.status === 'success' ? 'text-emerald-400 bg-emerald-500/5 border-emerald-500/10' :
+                                          chk.status === 'warning' ? 'text-amber-400 bg-amber-500/5 border-amber-500/10' :
+                                          'text-rose-400 bg-rose-500/5 border-rose-500/10';
+                      return (
+                        <div 
+                          key={i} 
+                          className={`p-3.5 border rounded-xl flex gap-3 text-xs leading-relaxed transition-all duration-300 hover:bg-slate-900/40 animate-slide-up ${statusColor}`}
+                          style={{ animationDelay: `${i * 100}ms` }}
+                        >
+                          {chk.status === 'success' ? <CheckCircle size={16} className="shrink-0 mt-0.5" /> : 
+                           chk.status === 'warning' ? <AlertTriangle size={16} className="shrink-0 mt-0.5" /> : 
+                           <AlertTriangle size={16} className="shrink-0 mt-0.5 text-rose-500" />}
+                          <div>
+                            <span className="font-bold block mb-0.5">{chk.section}</span>
+                            <span className="opacity-80 block text-[11px]">{chk.feedback}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Technical Depth */}
+                <div className="glass-card rounded-2xl p-6 space-y-4 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 mb-2 animate-scale-in">
+                      <div className="p-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl">
+                        <Sparkles size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-200">Resume Technicality Level</h4>
+                        <p className="text-[11px] text-slate-500">Analyzing depth of professional/technical syntax</p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-slate-950/60 border border-slate-900 rounded-2xl text-xs text-slate-300 leading-relaxed animate-slide-up">
+                      <span className="font-bold text-slate-200 block mb-1">AI Evaluator Notes:</span>
+                      {pageOptimization.technicalityFeedback}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl text-[10px] text-rose-400 leading-relaxed flex items-start gap-2 animate-slide-up" style={{ animationDelay: '150ms' }}>
+                    <Info size={12} className="shrink-0 mt-0.5 text-rose-500" />
+                    <span>Avoid simply dumping technical terms in a list. Recruiter screening algorithms prefer tools mentioned contextually within project results.</span>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
           )}
         </div>

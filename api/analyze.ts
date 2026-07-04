@@ -60,6 +60,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
            * If JD is provided: overallScore = Math.round((0.5 * keywordScore) + (0.35 * experienceScore) + (0.15 * formattingScore))
            * If no JD is provided: overallScore = Math.round((0.3 * keywordScore) + (0.3 * experienceScore) + (0.4 * formattingScore))
 
+      Perform additional analysis on the resume structure, page length, and content depth:
+      - Estimated page count (e.g. 1.0, 1.5, 2.0). Emphasize that resumes should be exact complete pages (e.g. exactly 1 page or exactly 2 pages). Partial pages (like 1.5 pages) look unprofessional and cause formatting flow issues.
+      - If the page count is fractional (e.g., 1.2 to 1.8), evaluate if they should condense their formatting and details to fit on exactly 1 page, or expand descriptions/bullets to fill exactly 2 pages.
+      - Check if critical elements or descriptions are thin or missing (like job descriptions, bullet points, technical skills, metrics).
+      - Evaluate the technicality level of bullet points.
+      - Map the resume format against standard preferences for tech startups/big tech (prefer 1-page modern layouts), traditional/finance corporations (prefer structured 1-2 page layouts), and federal/defense contractors (prefer detailed 2+ page profiles).
+
       Provide your output strictly in JSON format matching this schema:
       {
         "overallScore": 85,
@@ -81,7 +88,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             "suggested": "Engineered 15+ responsive React components, improving load times by 20%.",
             "reason": "Quantify your impact using metrics."
           }
-        ]
+        ],
+        "pageOptimization": {
+          "estimatedPageCount": 1.5,
+          "lengthEvaluation": "Your resume occupies approximately 1.5 pages. This leaves excessive empty space on page 2.",
+          "lengthRecommendation": "Condense margins, padding, and details to fit cleanly onto exactly 1 page, OR expand your professional experience details to fill exactly 2 full pages.",
+          "companyPreferences": [
+            {
+              "companyType": "Tech Startups & Modern Tech",
+              "encouragedFormat": "1-page modern layout. Highly encouraged; prioritizes concise, high-impact results.",
+              "suitability": "Highly Recommended"
+            },
+            {
+              "companyType": "Traditional Enterprises & Finance",
+              "encouragedFormat": "1-2 page conservative layout. Suitable; focuses on business value metrics and standard section headers.",
+              "suitability": "Suitable"
+            },
+            {
+              "companyType": "Federal & Defense Contractors",
+              "encouragedFormat": "Detailed 2+ page profiles. Focuses on exhaustive project mapping and compliance records.",
+              "suitability": "Requires expansion"
+            }
+          ],
+          "structuralChecklist": [
+            {
+              "section": "Professional Experience Descriptions",
+              "status": "warning",
+              "feedback": "Descriptions are present but lack quantitative impact and action-verb strength."
+            },
+            {
+              "section": "Technical Projects",
+              "status": "missing",
+              "feedback": "No technical projects were identified. Adding 2-3 key projects can significantly boost score."
+            }
+          ],
+          "technicalityFeedback": "The technicality level is moderate. While you list several keywords, they are not integrated into your job description bullet points. Suggest describing how you applied your tech stack."
+        }
       }
     `;
 
@@ -132,7 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Save analysis record
         await db.execute(
-          'INSERT INTO analyses (id, user_id, job_title, job_description, overall_score, score_breakdown, suggestions, keywords, formatting_issues) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          'INSERT INTO analyses (id, user_id, job_title, job_description, overall_score, score_breakdown, suggestions, keywords, formatting_issues, page_optimization) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
           [
             id,
             userId,
@@ -143,6 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             JSON.stringify(analysisJson.rewritingSuggestions || []),
             JSON.stringify(analysisJson.keywords || {}),
             JSON.stringify(analysisJson.formattingIssues || []),
+            JSON.stringify(analysisJson.pageOptimization || {}),
           ]
         );
 
