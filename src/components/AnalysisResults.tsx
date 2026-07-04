@@ -4,10 +4,67 @@ import { ChevronLeft, BarChart2, BookOpen, AlertTriangle, CheckCircle, HelpCircl
 
 interface AnalysisResultsProps {}
 
+const PageVisualizer = ({ count }: { count: number }) => {
+  const pages = [];
+  const fullPages = Math.floor(count);
+  const hasPartial = count % 1 !== 0;
+  const totalPages = Math.max(fullPages + (hasPartial ? 1 : 0), 1);
+
+  for (let i = 0; i < totalPages; i++) {
+    const isPartial = hasPartial && i === fullPages;
+    pages.push(
+      <div 
+        key={i} 
+        className={`w-14 h-18 rounded-lg border relative bg-slate-950/80 flex flex-col justify-between p-1.5 transition-all duration-300 shadow-md ${
+          isPartial 
+            ? 'border-amber-500/40 shadow-amber-500/5 animate-pulse' 
+            : 'border-emerald-500/40 shadow-emerald-500/5'
+        }`}
+      >
+        {/* Mock Lines representing content */}
+        <div className="space-y-1">
+          <div className="h-0.5 bg-slate-800 rounded w-4/5"></div>
+          <div className="h-0.5 bg-slate-800 rounded w-full"></div>
+          <div className="h-0.5 bg-slate-800 rounded w-11/12"></div>
+          <div className="h-0.5 bg-slate-800 rounded w-4/5"></div>
+          {isPartial ? (
+            <div className="h-6 border border-dashed border-amber-500/20 rounded flex items-center justify-center bg-amber-500/5 mt-1">
+              <span className="text-[5px] font-bold text-amber-500/80 tracking-wide uppercase">Empty</span>
+            </div>
+          ) : (
+            <>
+              <div className="h-0.5 bg-slate-800 rounded w-full"></div>
+              <div className="h-0.5 bg-slate-800 rounded w-3/4"></div>
+              <div className="h-0.5 bg-slate-800 rounded w-5/6"></div>
+            </>
+          )}
+        </div>
+        {/* Footer Page Number */}
+        <span className="text-[6px] text-slate-500 font-bold self-center">Page {i + 1}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-3 items-center justify-center p-3 bg-slate-950/50 rounded-xl border border-slate-900 shadow-inner shrink-0">
+      {pages}
+    </div>
+  );
+};
+
 export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
   const { currentAnalysis } = useStore();
   const [activeSubTab, setActiveSubTab] = useState<'keywords' | 'formatting' | 'suggestions' | 'optimization'>('keywords');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedState, setCopiedState] = useState<Record<string, boolean>>({});
+
+  const handleCopyText = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedState((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => {
+      setCopiedState((prev) => ({ ...prev, [id]: false }));
+    }, 2000);
+  };
 
   const pageOptimization = currentAnalysis?.pageOptimization || {
     estimatedPageCount: 1.0,
@@ -368,29 +425,51 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 animate-slide-up">
-                  <div className="md:col-span-1 p-5 bg-slate-950/60 border border-slate-900 rounded-2xl flex flex-col items-center justify-center text-center">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Length</span>
-                    <div className="text-3xl font-extrabold text-cyan-400 mt-1">
-                      {pageOptimization.estimatedPageCount} {pageOptimization.estimatedPageCount === 1 ? 'Page' : 'Pages'}
+                  <div className="md:col-span-1 p-5 bg-slate-950/60 border border-slate-900 rounded-2xl flex flex-col items-center justify-center text-center gap-3.5">
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Length</span>
+                      <div className="text-3xl font-extrabold text-cyan-400 mt-1">
+                        {pageOptimization.estimatedPageCount} {pageOptimization.estimatedPageCount === 1 ? 'Page' : 'Pages'}
+                      </div>
+                      {pageOptimization.estimatedPageCount % 1 !== 0 ? (
+                        <span className="mt-2 inline-block px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold rounded-full">
+                          Partial Page Warning
+                        </span>
+                      ) : (
+                        <span className="mt-2 inline-block px-2.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full">
+                          Perfect Page Boundary
+                        </span>
+                      )}
                     </div>
-                    {pageOptimization.estimatedPageCount % 1 !== 0 ? (
-                      <span className="mt-2.5 px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold rounded-full">
-                        Partial Page Warning
-                      </span>
-                    ) : (
-                      <span className="mt-2.5 px-2.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full">
-                        Perfect Page Boundary
-                      </span>
-                    )}
+
+                    {/* Page visualizer graphic */}
+                    <PageVisualizer count={pageOptimization.estimatedPageCount} />
                   </div>
 
                   <div className="md:col-span-2 space-y-3.5">
-                    <div className="p-4 bg-slate-950/30 border border-slate-900/60 rounded-2xl text-xs text-slate-300 leading-relaxed">
+                    <div className="p-4 bg-slate-950/30 border border-slate-900/60 rounded-2xl text-xs text-slate-300 leading-relaxed shadow-sm">
                       <span className="font-bold text-slate-200 block mb-1">Layout Spacing Evaluation:</span>
                       {pageOptimization.lengthEvaluation}
                     </div>
-                    <div className="p-4 bg-cyan-500/5 border border-cyan-500/10 rounded-2xl text-xs text-cyan-400 leading-relaxed">
-                      <span className="font-bold text-cyan-300 block mb-1">Formatting Action Recommendation:</span>
+                    
+                    <div className="p-4 bg-cyan-500/5 border border-cyan-500/10 rounded-2xl text-xs text-cyan-400 leading-relaxed relative group">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-cyan-300 block">Formatting Action Recommendation:</span>
+                        <button
+                          onClick={() => handleCopyText(pageOptimization.lengthRecommendation, 'lengthRec')}
+                          className="text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1 cursor-pointer bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 shrink-0"
+                          title="Copy suggestion to clipboard"
+                        >
+                          {copiedState['lengthRec'] ? (
+                            <span className="text-emerald-400">Copied!</span>
+                          ) : (
+                            <>
+                              <Copy size={11} />
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
                       {pageOptimization.lengthRecommendation}
                     </div>
                   </div>
@@ -418,12 +497,23 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
                     return (
                       <div 
                         key={i} 
-                        className="p-4.5 bg-slate-950/60 border border-slate-900 rounded-2xl flex flex-col justify-between space-y-4 hover:border-slate-800 transition-colors duration-300 animate-slide-up"
+                        className="p-4.5 bg-slate-950/60 border border-slate-900 rounded-2xl flex flex-col justify-between space-y-4 hover:border-slate-800/80 transition-colors duration-300 animate-slide-up relative group"
                         style={{ animationDelay: `${i * 80}ms` }}
                       >
                         <div className="space-y-1.5">
                           <div className="flex justify-between items-start gap-2">
                             <span className="text-xs font-bold text-slate-300">{pref.companyType}</span>
+                            <button
+                              onClick={() => handleCopyText(`${pref.companyType}: ${pref.encouragedFormat}`, `pref-${i}`)}
+                              className="text-[9px] font-semibold text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1 cursor-pointer bg-slate-900/60 px-1.5 py-0.5 rounded border border-slate-800 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 shrink-0"
+                              title="Copy description"
+                            >
+                              {copiedState[`pref-${i}`] ? (
+                                <span className="text-emerald-400">Copied!</span>
+                              ) : (
+                                <Copy size={10} />
+                              )}
+                            </button>
                           </div>
                           <p className="text-[11px] text-slate-400 leading-relaxed">{pref.encouragedFormat}</p>
                         </div>
@@ -453,22 +543,39 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
 
                   <div className="space-y-3 pt-1">
                     {pageOptimization.structuralChecklist?.map((chk: any, i: number) => {
-                      const statusColor = chk.status === 'success' ? 'text-emerald-400 bg-emerald-500/5 border-emerald-500/10' :
-                                          chk.status === 'warning' ? 'text-amber-400 bg-amber-500/5 border-amber-500/10' :
-                                          'text-rose-400 bg-rose-500/5 border-rose-500/10';
+                      const statusColor = chk.status === 'success' ? 'text-emerald-400 bg-emerald-500/5 border-emerald-500/10 hover:border-emerald-500/20' :
+                                          chk.status === 'warning' ? 'text-amber-400 bg-amber-500/5 border-amber-500/10 hover:border-amber-500/20' :
+                                          'text-rose-400 bg-rose-500/5 border-rose-500/10 hover:border-rose-500/20';
                       return (
                         <div 
                           key={i} 
-                          className={`p-3.5 border rounded-xl flex gap-3 text-xs leading-relaxed transition-all duration-300 hover:bg-slate-900/40 animate-slide-up ${statusColor}`}
+                          className={`p-3.5 border rounded-xl flex justify-between items-start gap-3 text-xs leading-relaxed transition-all duration-300 hover:bg-slate-900/40 animate-slide-up group ${statusColor}`}
                           style={{ animationDelay: `${i * 100}ms` }}
                         >
-                          {chk.status === 'success' ? <CheckCircle size={16} className="shrink-0 mt-0.5" /> : 
-                           chk.status === 'warning' ? <AlertTriangle size={16} className="shrink-0 mt-0.5" /> : 
-                           <AlertTriangle size={16} className="shrink-0 mt-0.5 text-rose-500" />}
-                          <div>
-                            <span className="font-bold block mb-0.5">{chk.section}</span>
-                            <span className="opacity-80 block text-[11px]">{chk.feedback}</span>
+                          <div className="flex gap-3">
+                            {chk.status === 'success' ? <CheckCircle size={16} className="shrink-0 mt-0.5" /> : 
+                             chk.status === 'warning' ? <AlertTriangle size={16} className="shrink-0 mt-0.5" /> : 
+                             <AlertTriangle size={16} className="shrink-0 mt-0.5 text-rose-500" />}
+                            <div>
+                              <span className="font-bold block mb-0.5">{chk.section}</span>
+                              <span className="opacity-80 block text-[11px]">{chk.feedback}</span>
+                            </div>
                           </div>
+
+                          <button
+                            onClick={() => handleCopyText(chk.feedback, `checklist-${i}`)}
+                            className="text-[9px] font-semibold text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1 cursor-pointer bg-slate-950/80 px-2 py-0.5 rounded border border-slate-900 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 shrink-0"
+                            title="Copy suggestion text"
+                          >
+                            {copiedState[`checklist-${i}`] ? (
+                              <span className="text-emerald-400">Copied!</span>
+                            ) : (
+                              <>
+                                <Copy size={10} />
+                                Copy
+                              </>
+                            )}
+                          </button>
                         </div>
                       );
                     })}
@@ -488,8 +595,24 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 bg-slate-950/60 border border-slate-900 rounded-2xl text-xs text-slate-300 leading-relaxed animate-slide-up">
-                      <span className="font-bold text-slate-200 block mb-1">AI Evaluator Notes:</span>
+                    <div className="p-4 bg-slate-950/60 border border-slate-900 rounded-2xl text-xs text-slate-300 leading-relaxed animate-slide-up relative group">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-slate-200 block">AI Evaluator Notes:</span>
+                        <button
+                          onClick={() => handleCopyText(pageOptimization.technicalityFeedback, 'techFeedback')}
+                          className="text-[10px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1 cursor-pointer bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity duration-200 shrink-0"
+                          title="Copy notes to clipboard"
+                        >
+                          {copiedState['techFeedback'] ? (
+                            <span className="text-emerald-400">Copied!</span>
+                          ) : (
+                            <>
+                              <Copy size={11} />
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
                       {pageOptimization.technicalityFeedback}
                     </div>
                   </div>
