@@ -5,6 +5,12 @@ interface User {
   email: string;
 }
 
+export interface ToastState {
+  message: string;
+  type: 'success' | 'error' | 'info';
+  visible: boolean;
+}
+
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -13,12 +19,15 @@ interface AuthState {
   historyAnalyses: any[];
   currentAnalysis: any | null;
   theme: 'light' | 'dark';
+  toast: ToastState | null;
   setAuth: (user: User | null, token: string | null) => void;
   logout: () => void;
   setUserApiKey: (key: string | null) => void;
   setHistory: (resumes: any[], analyses: any[]) => void;
   setCurrentAnalysis: (analysis: any | null) => void;
   toggleTheme: () => void;
+  showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
+  hideToast: () => void;
 }
 
 export const useStore = create<AuthState>((set) => ({
@@ -29,6 +38,7 @@ export const useStore = create<AuthState>((set) => ({
   historyAnalyses: [],
   currentAnalysis: null,
   theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'dark',
+  toast: null,
 
   setAuth: (user, token) => {
     if (user && token) {
@@ -69,5 +79,14 @@ export const useStore = create<AuthState>((set) => ({
       document.documentElement.classList.remove('light');
     }
     return { theme: nextTheme };
+  }),
+  showToast: (message, type = 'success') => {
+    set({ toast: { message, type, visible: true } });
+  },
+  hideToast: () => set((state) => {
+    if (state.toast) {
+      return { toast: { ...state.toast, visible: false } };
+    }
+    return {};
   }),
 }));

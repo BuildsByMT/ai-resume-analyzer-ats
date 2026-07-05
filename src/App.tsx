@@ -7,6 +7,7 @@ import { AnalysisResults } from './components/AnalysisResults';
 import { ResumeBuilder } from './components/ResumeBuilder';
 import { BarChart3, FileText } from 'lucide-react';
 import { Chatbot } from './components/Chatbot';
+import { Toast } from './components/Toast';
 
 function App() {
   const { user } = useStore();
@@ -125,6 +126,9 @@ function App() {
 
       {/* Floating Chatbot Assistant */}
       {user && <Chatbot />}
+
+      {/* Global Toast Notification */}
+      <Toast />
     </div>
   );
 }

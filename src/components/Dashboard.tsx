@@ -5,7 +5,7 @@ import { Upload, Briefcase, Play, Loader2, History, Trash2, ShieldAlert, User, E
 interface DashboardProps {}
 
 export const Dashboard: React.FC<DashboardProps> = () => {
-  const { token, user, userApiKey, historyAnalyses, setHistory, setCurrentAnalysis } = useStore();
+  const { token, user, userApiKey, historyAnalyses, setHistory, setCurrentAnalysis, showToast } = useStore();
   
   const [file, setFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState('');
@@ -56,6 +56,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       if (droppedFile.type === 'application/pdf') {
         setFile(droppedFile);
         setErrorMsg('');
+        showToast('AI Resume has been uploaded successfully!', 'success');
       } else {
         setErrorMsg('Only PDF files are supported.');
       }
@@ -68,6 +69,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       if (selectedFile.type === 'application/pdf') {
         setFile(selectedFile);
         setErrorMsg('');
+        showToast('AI Resume has been uploaded successfully!', 'success');
       } else {
         setErrorMsg('Only PDF files are supported.');
       }

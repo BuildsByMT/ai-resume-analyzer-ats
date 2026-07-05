@@ -43,9 +43,12 @@ The client-side routing is handled via hash routing:
      - *Formatting Report:* Checklist of ATS compliance standards.
      - *AI Rewriting:* Cards showing side-by-side "Original" vs "ATS Optimized" bullet points.
 4. **`#/creator` (ATS Resume Builder):**
-   - Multi-step wizard form (Step 1: Contact, Step 2: Experience, Step 3: Education, Step 4: Skills, Step 5: Projects).
+   - Multi-step wizard form driven by a horizontal **Curved Wavy Stepper** (SVG-based sinusoidal wave with glowing active indicator, tooltips, and completion checkmarks).
    - Real-time previews of the text layout.
    - "Generate & Download ATS Resume" primary CTA.
+5. **Floating AI Chatbot (All Logged-in Pages):**
+   - Interactive chat window floating at the bottom right.
+   - Restricted via backend system prompt to answer resume-related, ATS, and CV inquiries, while politely refusing general chat.
 
 ---
 
@@ -55,8 +58,11 @@ We will use `zustand` for lightweight state management.
 #### Auth Store (`useAuthStore`):
 - `user`: User details (ID, email) or `null`.
 - `token`: JWT string.
+- `toast`: ToastState containing `message`, `type`, and `visible` properties.
 - `setAuth(user, token)`: Function to set sessions.
 - `logout()`: Clears credentials and redirects.
+- `showToast(message, type)`: Triggers a global toast notification.
+- `hideToast()`: Dismisses the active toast.
 
 #### Resume Store (`useResumeStore`):
 - `currentResume`: Parsed details of the active resume.
@@ -67,8 +73,9 @@ We will use `zustand` for lightweight state management.
 ---
 
 ### 4. Interactive Flow & Animations
-- **File Upload:** Smooth hover states on drag-over, uploader animation during parsing.
+- **File Upload:** Smooth hover states on drag-over, uploader animation during parsing, and global slide-in Toast alert on upload success.
 - **SVG Radial Gauge:** Circular progress path utilizing `stroke-dashoffset` keyframe transition (`fill-circle`) to animate-fill the score from 0% to the matching overall percentage.
+- **Curved Wavy Stepper:** Draws a fluid sinusoidal SVG wave which animates the fill color dynamically utilizing `stroke-dashoffset` as the user navigates steps. Interactive nodes feature pulsating active states and scaling speech bubbles that pop up on active/hover focus.
 - **Staggered Entry transitions:** Uses CSS scale-in and slide-up animations with calculated animation delays (`style={{ animationDelay: '...' }}`) for staggered entries on keyword chips, checklist rows, and AISuggestions cards.
 - **AI CV Assistant:** Keeps track of whether suggestions are already applied. Disables the button and shows "✓ Applied" to prevent duplicate bullet additions.
 - **Modals:** Custom React modal components styled with glassmorphic cards and fade/scale transitions, avoiding native browser interrupt block alerts.

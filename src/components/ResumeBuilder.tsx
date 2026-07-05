@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { jsPDF } from 'jspdf';
-import { ChevronRight, ChevronLeft, Download, Plus, Trash2, User, Briefcase, GraduationCap, Code, FolderGit, Upload, Loader2, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Download, Plus, Trash2, Upload, Loader2, Sparkles } from 'lucide-react';
 
 const industryPresets = {
   tech: {
@@ -39,7 +39,7 @@ const industryPresets = {
 };
 
 export const ResumeBuilder: React.FC = () => {
-  const { token, userApiKey, currentAnalysis } = useStore();
+  const { token, userApiKey, currentAnalysis, showToast } = useStore();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
@@ -176,6 +176,7 @@ export const ResumeBuilder: React.FC = () => {
           }
 
           setParseSuccess(true);
+          showToast('AI Resume has been uploaded successfully!', 'success');
           setStep(1);
         } catch (apiErr: any) {
           setParseError(apiErr.message || 'API request failed.');
@@ -731,32 +732,137 @@ export const ResumeBuilder: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left: Step navigation list */}
-        <div className="lg:col-span-1 glass-card rounded-2xl p-4 h-fit space-y-2">
-          {[
-            { id: 1, label: 'Contact', icon: <User size={15} /> },
-            { id: 2, label: 'Experience', icon: <Briefcase size={15} /> },
-            { id: 3, label: 'Education', icon: <GraduationCap size={15} /> },
-            { id: 4, label: 'Projects', icon: <FolderGit size={15} /> },
-            { id: 5, label: 'Skills', icon: <Code size={15} /> },
-          ].map(s => (
-            <button
-              key={s.id}
-              onClick={() => setStep(s.id)}
-              className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2.5 transition-all duration-200 ${
-                step === s.id
-                  ? 'bg-slate-900 text-cyan-400 border border-slate-800'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-950/40'
-              }`}
-            >
-              {s.icon}
-              {s.label}
-            </button>
-          ))}
-        </div>
+      {/* Horizontal Wavy Stepper */}
+      <div className="glass-card rounded-2xl p-4 mb-6 relative overflow-hidden flex justify-center border border-slate-900 shadow-lg">
+        <div className="w-full max-w-2xl px-2">
+          <svg viewBox="0 0 500 135" className="w-full h-auto overflow-visible select-none">
+            <defs>
+              <linearGradient id="stepperGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#06b6d4" />
+                <stop offset="100%" stopColor="#10b981" />
+              </linearGradient>
+            </defs>
 
-        {/* Right: Step Inputs */}
+            {/* Inactive background wave path */}
+            <path
+              d="M 50,70 C 100,70 100,100 150,100 C 200,100 200,70 250,70 C 300,70 300,45 350,45 L 450,45"
+              fill="none"
+              stroke="#1e293b"
+              strokeWidth="4"
+              strokeLinecap="round"
+            />
+
+            {/* Active animated foreground wave path */}
+            <path
+              d="M 50,70 C 100,70 100,100 150,100 C 200,100 200,70 250,70 C 300,70 300,45 350,45 L 450,45"
+              fill="none"
+              stroke="url(#stepperGradient)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeDasharray="415"
+              strokeDashoffset={415 - (415 * (step - 1) / 4)}
+              className="transition-all duration-700 ease-in-out"
+            />
+
+            {/* Step Nodes and Labels */}
+            {[
+              { id: 1, label: 'Contact', tooltip: 'Organization & Contact', cx: 50, cy: 70 },
+              { id: 2, label: 'Experience', tooltip: 'Work Experience', cx: 150, cy: 100 },
+              { id: 3, label: 'Education', tooltip: 'Academic History', cx: 250, cy: 70 },
+              { id: 4, label: 'Projects', tooltip: 'Key Projects & Details', cx: 350, cy: 45 },
+              { id: 5, label: 'Skills', tooltip: 'Technical Skills', cx: 450, cy: 45 }
+            ].map((s) => {
+              const isCompleted = step > s.id;
+              const isActive = step === s.id;
+
+              return (
+                <g key={s.id} className="group/node cursor-pointer" onClick={() => setStep(s.id)}>
+                  {/* Pulsating Ring for Active Step */}
+                  {isActive && (
+                    <circle
+                      cx={s.cx}
+                      cy={s.cy}
+                      r="12"
+                      className="fill-cyan-500/20 stroke-none animate-pulse"
+                    />
+                  )}
+
+                  {/* Node Dot / Circle */}
+                  {isCompleted ? (
+                    <>
+                      <circle cx={s.cx} cy={s.cy} r="9" className="fill-emerald-500 stroke-none" />
+                      <path
+                        d={`M ${s.cx - 3.5},${s.cy} l 2.5,2.5 l 4.5,-4.5`}
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </>
+                  ) : isActive ? (
+                    <circle
+                      cx={s.cx}
+                      cy={s.cy}
+                      r="7"
+                      className="fill-cyan-400 stroke-slate-950 stroke-[2] shadow-lg shadow-cyan-500/20"
+                    />
+                  ) : (
+                    <circle
+                      cx={s.cx}
+                      cy={s.cy}
+                      r="6"
+                      className="fill-slate-800 hover:fill-slate-700 stroke-slate-700 stroke-[1.5] transition-colors duration-200"
+                    />
+                  )}
+
+                  {/* Label Text */}
+                  <text
+                    x={s.cx}
+                    y={s.cy + 22}
+                    textAnchor="middle"
+                    className={`text-[9px] font-bold tracking-tight select-none transition-colors duration-300 ${
+                      isActive
+                        ? 'fill-cyan-400 font-extrabold'
+                        : isCompleted
+                        ? 'fill-emerald-400 font-bold'
+                        : 'fill-slate-500 hover:fill-slate-400'
+                    }`}
+                  >
+                    {s.label}
+                  </text>
+
+                  {/* Floating Speech Bubble Tooltip */}
+                  <g
+                    className={`transition-all duration-300 transform origin-bottom ${
+                      isActive
+                        ? 'opacity-100 scale-100 translate-y-0'
+                        : 'opacity-0 scale-95 translate-y-1 group-hover/node:opacity-100 group-hover/node:scale-100 group-hover/node:translate-y-0 pointer-events-none'
+                    }`}
+                  >
+                    {/* Bubble SVG Path pointing down */}
+                    <path
+                      d={`M ${s.cx - 48},${s.cy - 36} h 96 a 3,3 0 0 1 3,3 v 10 a 3,3 0 0 1 -3,3 h -44 l -4,5 l -4,-5 h -44 a 3,3 0 0 1 -3,-3 v -10 a 3,3 0 0 1 3,-3 z`}
+                      className="fill-cyan-50 stroke-cyan-400/20 stroke shadow-md"
+                    />
+                    <text
+                      x={s.cx}
+                      y={s.cy - 26}
+                      textAnchor="middle"
+                      className="text-[7.5px] font-extrabold fill-slate-900 select-none antialiased"
+                    >
+                      {s.tooltip}
+                    </text>
+                  </g>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Step Inputs */}
         <div className={`${currentAnalysis ? 'lg:col-span-3' : 'lg:col-span-4'} space-y-6`}>
           <div className="glass-card rounded-2xl p-6 min-h-[350px]">
             {/* Step 1: Contact Info */}

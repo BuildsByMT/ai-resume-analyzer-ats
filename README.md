@@ -12,7 +12,9 @@ This project is engineered to operate **100% free of charge** using serverless f
 * **Keyword Density Analysis:** Dynamically extracts present vs. missing hard and soft skills, showing them in color-coded visual grids.
 * **ATS Compatibility Audit:** Runs checkups to identify formatting errors (such as multi-column layouts, incompatible fonts, tables, or icons) that frequently trigger parser failures.
 * **AI Bullet-Point Optimizer:** Provides side-by-side rewriting suggestions to help users phrase experience descriptions using strong action verbs and quantifiable metrics.
-* **ATS-Friendly Resume Creator:** A step-by-step form wizard allowing users to input contact details, work history, education, projects, and skills, generating a clean, single-column PDF locally in the browser using `jsPDF`.
+* **ATS-Friendly Resume Creator:** A step-by-step form wizard featuring an interactive **Wavy SVG Stepper** (fluid sinusoidal path tracking, checkmark completions, glowing active nodes, and animated speech bubble tooltips) that generates a clean, single-column PDF locally using `jsPDF`.
+* **Resume Optimizer AI Chatbot:** A floating AI career assistant at the bottom-right corner of the website for logged-in users. Using system restrictions, the assistant strictly handles queries related to resume writing, templates, page length, ATS compatibility, and CV comparisons.
+* **Global Toast Notification System:** A lightweight state-driven toast component indicating successful uploads and AI imports.
 * **Dashboard History Logging:** Logged-in users can view, re-examine, or delete previous scan results.
 
 ---
