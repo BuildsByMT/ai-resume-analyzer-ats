@@ -20,6 +20,8 @@ interface AuthState {
   currentAnalysis: any | null;
   theme: 'light' | 'dark';
   toast: ToastState | null;
+  isAnalyzing: boolean;
+  analysisError: string | null;
   setAuth: (user: User | null, token: string | null) => void;
   logout: () => void;
   setUserApiKey: (key: string | null) => void;
@@ -28,6 +30,8 @@ interface AuthState {
   toggleTheme: () => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   hideToast: () => void;
+  fetchHistory: () => Promise<void>;
+  triggerAnalysis: (pdfBase64: string, jobTitle: string, jobDescription: string) => Promise<void>;
 }
 
 export const useStore = create<AuthState>((set) => ({
@@ -39,6 +43,8 @@ export const useStore = create<AuthState>((set) => ({
   currentAnalysis: null,
   theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'dark',
   toast: null,
+  isAnalyzing: false,
+  analysisError: null,
 
   setAuth: (user, token) => {
     if (user && token) {
@@ -55,7 +61,7 @@ export const useStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    set({ user: null, token: null, historyResumes: [], historyAnalyses: [], currentAnalysis: null });
+    set({ user: null, token: null, historyResumes: [], historyAnalyses: [], currentAnalysis: null, isAnalyzing: false, analysisError: null });
   },
 
   setUserApiKey: (key) => {
@@ -89,4 +95,72 @@ export const useStore = create<AuthState>((set) => ({
     }
     return {};
   }),
+
+  fetchHistory: async () => {
+    const { token } = useStore.getState();
+    if (!token) return;
+    try {
+      const response = await fetch('/api/resumes', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        set({ historyResumes: data.resumes || [], historyAnalyses: data.analyses || [] });
+      }
+    } catch (err) {
+      console.error('Error fetching history:', err);
+    }
+  },
+
+  triggerAnalysis: async (pdfBase64: string, jobTitle: string, jobDescription: string) => {
+    const { token, userApiKey } = useStore.getState();
+    set({ isAnalyzing: true, analysisError: null });
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          pdfBase64,
+          jobTitle,
+          jobDescription,
+          userApiKey
+        })
+      });
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Serverless API error output:", text);
+        throw new Error("API call timed out or failed. Please check your Vercel logs and ensure your DATABASE_URL does not point to the restricted /sys database.");
+      }
+
+      const resData = await response.json();
+      if (!response.ok || !resData.success) {
+        throw new Error(resData.error || resData.message || 'Analysis failed. Please check your Gemini API key and try again.');
+      }
+
+      set({ currentAnalysis: resData.data, isAnalyzing: false });
+      
+      // Update history in the background
+      await useStore.getState().fetchHistory();
+
+      useStore.getState().showToast('AI Resume analyzed successfully!', 'success');
+
+      // Only redirect if user is still on Dashboard
+      const currentHash = window.location.hash;
+      if (currentHash === '#/dashboard' || currentHash === '#/' || !currentHash) {
+        window.location.hash = '#/analysis';
+      }
+    } catch (error: any) {
+      console.error("Background analysis failed:", error);
+      set({ isAnalyzing: false, analysisError: error.message || 'Analysis failed.' });
+      useStore.getState().showToast(error.message || 'Analysis failed.', 'error');
+    }
+  },
 }));

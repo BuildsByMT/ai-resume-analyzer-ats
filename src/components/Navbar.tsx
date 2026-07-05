@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { SettingsModal } from './SettingsModal';
-import { Settings, LogOut, FileText, BarChart3, Sun, Moon } from 'lucide-react';
+import { Settings, LogOut, FileText, BarChart3, Sun, Moon, Loader2 } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab }) => {
-  const { user, logout, theme, toggleTheme } = useStore();
+  const { user, logout, theme, toggleTheme, isAnalyzing } = useStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
@@ -58,6 +58,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab }) => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-1.5 sm:gap-3">
+          {/* Background Analysis Spinner */}
+          {isAnalyzing && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-xl text-xs font-semibold animate-pulse mr-1 shrink-0">
+              <Loader2 size={13} className="animate-spin text-cyan-400" />
+              <span className="hidden sm:inline">Analyzing Resume...</span>
+            </div>
+          )}
 
           {/* Theme Toggle */}
           <button

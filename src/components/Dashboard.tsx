@@ -5,39 +5,30 @@ import { Upload, Briefcase, Play, Loader2, History, Trash2, ShieldAlert, User, E
 interface DashboardProps {}
 
 export const Dashboard: React.FC<DashboardProps> = () => {
-  const { token, user, userApiKey, historyAnalyses, setHistory, setCurrentAnalysis, showToast } = useStore();
+  const { 
+    token, 
+    user, 
+    historyAnalyses, 
+    showToast, 
+    isAnalyzing, 
+    analysisError, 
+    fetchHistory, 
+    triggerAnalysis,
+    setCurrentAnalysis
+  } = useStore();
   
   const [file, setFile] = useState<File | null>(null);
   const [jobTitle, setJobTitle] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch history if user is logged in
-  const fetchHistory = async () => {
-    if (!token) return;
-    try {
-      const response = await fetch('/api/resumes', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setHistory(data.resumes || [], data.analyses || []);
-      }
-    } catch (err) {
-      console.error('Error fetching history:', err);
-    }
-  };
-
   useEffect(() => {
     fetchHistory();
-  }, [token]);
+  }, [token, fetchHistory]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -111,55 +102,20 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       return;
     }
 
-    // Backend will return error if both environment key and user key are missing
-
-    setIsLoading(true);
-
     try {
       // Read file as Base64
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = async () => {
         const base64String = reader.result as string;
-
         try {
-          const response = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-            },
-            body: JSON.stringify({
-              pdfBase64: base64String,
-              jobTitle,
-              jobDescription,
-              userApiKey
-            })
-          });
-
-          const contentType = response.headers.get("content-type");
-          if (!contentType || !contentType.includes("application/json")) {
-            // It returned a non-JSON page (likely 500 error or timeout)
-            const text = await response.text();
-            console.error("Serverless API error output:", text);
-            throw new Error("API call timed out or failed. Please check your Vercel logs and ensure your DATABASE_URL does not point to the restricted /sys database.");
-          }
-
-          const resData = await response.json();
-          if (!response.ok || !resData.success) {
-            throw new Error(resData.error || resData.message || 'Analysis failed. Please check your Gemini API key and try again.');
-          }
-
-          setCurrentAnalysis(resData.data);
-          window.location.hash = '#/analysis';
+          await triggerAnalysis(base64String, jobTitle, jobDescription);
         } catch (apiErr: any) {
           setErrorMsg(apiErr.message || 'API request failed.');
-          setIsLoading(false);
         }
       };
     } catch (err: any) {
       setErrorMsg('Failed to process file.');
-      setIsLoading(false);
     }
   };
 
@@ -178,9 +134,9 @@ export const Dashboard: React.FC<DashboardProps> = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left 2 Cols: Uploader & Form */}
         <div className="lg:col-span-2 space-y-6">
-          {errorMsg && (
+          {(errorMsg || analysisError) && (
             <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm font-medium animate-in fade-in duration-200">
-              {errorMsg}
+              {errorMsg || analysisError}
             </div>
           )}
 
@@ -258,10 +214,10 @@ export const Dashboard: React.FC<DashboardProps> = () => {
             <div className="pt-2">
               <button
                 onClick={handleAnalyze}
-                disabled={isLoading}
+                disabled={isAnalyzing}
                 className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold py-3.5 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group cursor-pointer"
               >
-                {isLoading ? (
+                {isAnalyzing ? (
                   <>
                     <Loader2 className="animate-spin" size={18} />
                     Analyzing Resume with AI (Gemini)...
