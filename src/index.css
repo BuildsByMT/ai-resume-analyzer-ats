@@ -165,3 +165,49 @@ body {
 .animate-scale-in {
   animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Explicit high-visibility hover effects for light mode */
+:root.light .glass-card:hover {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(8, 145, 178, 0.3) !important; /* cyan-600 border highlight */
+  box-shadow: 0 12px 24px -10px rgba(8, 145, 178, 0.12) !important;
+}
+
+:root.light button:not(.bg-gradient-to-r):hover,
+:root.light a:hover {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Make hover text pop in light mode */
+:root.light .text-slate-400:hover {
+  color: #0891b2 !important; /* cyan-600 */
+}
+
+/* Polishing button hovers: slate-900 maps to #f1f5f9. Hover is #cbd5e1 to make it very visible */
+:root.light button.bg-slate-900:hover,
+:root.light button.hover\:bg-slate-800:hover {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Analysis history list items hover */
+:root.light .hover\:bg-slate-900\/40:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Logout button hover */
+:root.light .hover\:bg-rose-500\/10:hover {
+  background-color: rgba(225, 29, 72, 0.12) !important;
+  border-color: rgba(225, 29, 72, 0.25) !important;
+  color: #e11d48 !important;
+}
+
+/* Input hover outline */
+:root.light input:hover,
+:root.light textarea:hover,
+:root.light select:hover {
+  border-color: #94a3b8 !important;
+}
+

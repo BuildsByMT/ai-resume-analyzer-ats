@@ -46,6 +46,73 @@ export const ResumeBuilder: React.FC = () => {
   const [parseError, setParseError] = useState('');
   const [parseSuccess, setParseSuccess] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<'tech' | 'hr' | 'engineering' | 'general'>('tech');
+  const [visitedSteps, setVisitedSteps] = useState<Record<number, boolean>>({});
+
+  const isContactValid = () => {
+    let filledCount = 0;
+    if (contact.name?.trim()) filledCount++;
+    if (contact.email?.trim()) filledCount++;
+    if (contact.phone?.trim()) filledCount++;
+    if (contact.location?.trim()) filledCount++;
+    if (contact.website?.trim()) filledCount++;
+    return filledCount >= 3;
+  };
+
+  const isExperienceValid = () => {
+    if (!experience || experience.length === 0) return false;
+    return experience.some(exp => {
+      let filledCount = 0;
+      if (exp.company?.trim()) filledCount++;
+      if (exp.role?.trim()) filledCount++;
+      if (exp.duration?.trim()) filledCount++;
+      if (exp.details?.trim()) filledCount++;
+      return filledCount >= 3;
+    });
+  };
+
+  const isEducationValid = () => {
+    if (!education || education.length === 0) return false;
+    return education.some(edu => {
+      let filledCount = 0;
+      if (edu.school?.trim()) filledCount++;
+      if (edu.degree?.trim()) filledCount++;
+      if (edu.duration?.trim()) filledCount++;
+      return filledCount >= 2;
+    });
+  };
+
+  const isProjectsValid = () => {
+    if (!projects || projects.length === 0) return false;
+    return projects.some(proj => {
+      let filledCount = 0;
+      if (proj.title?.trim()) filledCount++;
+      if (proj.tech?.trim()) filledCount++;
+      if (proj.details?.trim()) filledCount++;
+      return filledCount >= 2;
+    });
+  };
+
+  const isSkillsValid = () => {
+    let filledCount = 0;
+    if (skills.languages?.trim()) filledCount++;
+    if (skills.frameworks?.trim()) filledCount++;
+    if (skills.tools?.trim()) filledCount++;
+    return filledCount >= 2;
+  };
+
+  const isStepValid = (stepId: number) => {
+    if (stepId === 1) return isContactValid();
+    if (stepId === 2) return isExperienceValid();
+    if (stepId === 3) return isEducationValid();
+    if (stepId === 4) return isProjectsValid();
+    if (stepId === 5) return isSkillsValid();
+    return true;
+  };
+
+  const handleSetStep = (newStep: number) => {
+    setVisitedSteps(prev => ({ ...prev, [step]: true }));
+    setStep(newStep);
+  };
   
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -178,6 +245,7 @@ export const ResumeBuilder: React.FC = () => {
           setParseSuccess(true);
           showToast('AI Resume has been uploaded successfully!', 'success');
           setStep(1);
+          setVisitedSteps({});
         } catch (apiErr: any) {
           setParseError(apiErr.message || 'API request failed.');
         } finally {
@@ -747,7 +815,7 @@ export const ResumeBuilder: React.FC = () => {
             <path
               d="M 50,70 C 100,70 100,100 150,100 C 200,100 200,70 250,70 C 300,70 300,45 350,45 L 450,45"
               fill="none"
-              stroke="#1e293b"
+              className="stroke-slate-800"
               strokeWidth="4"
               strokeLinecap="round"
             />
@@ -772,11 +840,14 @@ export const ResumeBuilder: React.FC = () => {
               { id: 4, label: 'Projects', tooltip: 'Key Projects & Details', cx: 350, cy: 45 },
               { id: 5, label: 'Skills', tooltip: 'Technical Skills', cx: 450, cy: 45 }
             ].map((s) => {
-              const isCompleted = step > s.id;
               const isActive = step === s.id;
+              const isVisited = visitedSteps[s.id] || step > s.id;
+              const isValid = isStepValid(s.id);
+              const isCompleted = isVisited && isValid;
+              const isInvalid = isVisited && !isValid;
 
               return (
-                <g key={s.id} className="group/node cursor-pointer" onClick={() => setStep(s.id)}>
+                <g key={s.id} className="group/node cursor-pointer" onClick={() => handleSetStep(s.id)}>
                   {/* Pulsating Ring for Active Step */}
                   {isActive && (
                     <circle
@@ -793,6 +864,18 @@ export const ResumeBuilder: React.FC = () => {
                       <circle cx={s.cx} cy={s.cy} r="9" className="fill-emerald-500 stroke-none" />
                       <path
                         d={`M ${s.cx - 3.5},${s.cy} l 2.5,2.5 l 4.5,-4.5`}
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </>
+                  ) : isInvalid ? (
+                    <>
+                      <circle cx={s.cx} cy={s.cy} r="9" className="fill-rose-500 stroke-none" />
+                      <path
+                        d={`M ${s.cx - 2.5},${s.cy - 2.5} L ${s.cx + 2.5},${s.cy + 2.5} M ${s.cx + 2.5},${s.cy - 2.5} L ${s.cx - 2.5},${s.cy + 2.5}`}
                         fill="none"
                         stroke="white"
                         strokeWidth="2"
@@ -826,6 +909,8 @@ export const ResumeBuilder: React.FC = () => {
                         ? 'fill-cyan-400 font-extrabold'
                         : isCompleted
                         ? 'fill-emerald-400 font-bold'
+                        : isInvalid
+                        ? 'fill-rose-400 font-bold'
                         : 'fill-slate-500 hover:fill-slate-400'
                     }`}
                   >
@@ -843,15 +928,27 @@ export const ResumeBuilder: React.FC = () => {
                     {/* Bubble SVG Path pointing down */}
                     <path
                       d={`M ${s.cx - 48},${s.cy - 36} h 96 a 3,3 0 0 1 3,3 v 10 a 3,3 0 0 1 -3,3 h -44 l -4,5 l -4,-5 h -44 a 3,3 0 0 1 -3,-3 v -10 a 3,3 0 0 1 3,-3 z`}
-                      className="fill-cyan-50 stroke-cyan-400/20 stroke shadow-md"
+                      className={`stroke-2 ${
+                        isInvalid
+                          ? 'fill-slate-900 stroke-rose-400 shadow-md'
+                          : isActive
+                          ? 'fill-slate-900 stroke-cyan-400 shadow-md'
+                          : 'fill-slate-950 stroke-slate-800 shadow-md'
+                      } transition-colors duration-300`}
                     />
                     <text
                       x={s.cx}
                       y={s.cy - 26}
                       textAnchor="middle"
-                      className="text-[7.5px] font-extrabold fill-slate-900 select-none antialiased"
+                      className={`text-[7.5px] font-extrabold select-none antialiased ${
+                        isInvalid
+                          ? 'fill-rose-400'
+                          : isActive
+                          ? 'fill-cyan-400'
+                          : 'fill-slate-400'
+                      }`}
                     >
-                      {s.tooltip}
+                      {isInvalid ? '⚠️ Action Required' : s.tooltip}
                     </text>
                   </g>
                 </g>
@@ -1275,7 +1372,7 @@ export const ResumeBuilder: React.FC = () => {
           {/* Form Actions Footer */}
           <div className="flex items-center justify-between">
             <button
-              onClick={() => setStep(prev => Math.max(1, prev - 1))}
+              onClick={() => handleSetStep(Math.max(1, step - 1))}
               disabled={step === 1}
               className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 border border-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-slate-300 rounded-xl hover:text-slate-100 transition-colors cursor-pointer"
             >
@@ -1284,7 +1381,7 @@ export const ResumeBuilder: React.FC = () => {
 
             {step < 5 ? (
               <button
-                onClick={() => setStep(prev => Math.min(5, prev + 1))}
+                onClick={() => handleSetStep(Math.min(5, step + 1))}
                 className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 text-xs font-bold rounded-xl hover:opacity-95 transition-all cursor-pointer"
               >
                 Next <ChevronRight size={14} />
