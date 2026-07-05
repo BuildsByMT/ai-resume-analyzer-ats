@@ -9,10 +9,11 @@ interface ChatMessage {
 }
 
 export const Chatbot: React.FC = () => {
-  const { token, userApiKey } = useStore();
+  const { token, userApiKey, user } = useStore();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const saved = sessionStorage.getItem('resume_chatbot_history');
+    const storageKey = user ? `resume_chatbot_history_${user.id}` : 'resume_chatbot_history';
+    const saved = sessionStorage.getItem(storageKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -34,8 +35,9 @@ export const Chatbot: React.FC = () => {
 
   // Save messages to sessionStorage when updated
   useEffect(() => {
-    sessionStorage.setItem('resume_chatbot_history', JSON.stringify(messages));
-  }, [messages]);
+    const storageKey = user ? `resume_chatbot_history_${user.id}` : 'resume_chatbot_history';
+    sessionStorage.setItem(storageKey, JSON.stringify(messages));
+  }, [messages, user]);
 
   // Scroll to bottom
   const scrollToBottom = () => {
@@ -107,7 +109,8 @@ export const Chatbot: React.FC = () => {
 
   const clearChat = () => {
     setMessages([]);
-    sessionStorage.removeItem('resume_chatbot_history');
+    const storageKey = user ? `resume_chatbot_history_${user.id}` : 'resume_chatbot_history';
+    sessionStorage.removeItem(storageKey);
     setError(null);
   };
 
