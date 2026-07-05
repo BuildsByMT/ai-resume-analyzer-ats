@@ -6,6 +6,7 @@ import { Dashboard } from './components/Dashboard';
 import { AnalysisResults } from './components/AnalysisResults';
 import { ResumeBuilder } from './components/ResumeBuilder';
 import { BarChart3, FileText } from 'lucide-react';
+import { Chatbot } from './components/Chatbot';
 
 function App() {
   const { user } = useStore();
@@ -121,6 +122,9 @@ function App() {
           </button>
         </div>
       )}
+
+      {/* Floating Chatbot Assistant */}
+      {user && <Chatbot />}
     </div>
   );
 }
