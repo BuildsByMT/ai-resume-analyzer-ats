@@ -46,6 +46,9 @@ CREATE TABLE analyses (
     overall_score INT NOT NULL,
     score_breakdown JSON NOT NULL, -- Detailed subscores (keyword, experience, format)
     suggestions JSON NOT NULL,     -- Specific improvement action items
+    keywords JSON,                 -- Matched/missing keywords list
+    formatting_issues JSON,         -- Formatting checks list
+    page_optimization JSON,        -- Page length details and checklists
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -134,3 +137,25 @@ To avoid server-side overhead and rendering timeouts, the PDF is compiled direct
   Accidental data deletions (e.g., deleting history entries) are intercepted by a themed, glassmorphic custom modal instead of a native browser popup. The modal uses state tracking (`itemToDeleteId`) and backdrop blur to focus the confirmation action.
 - **Guest Promotion Card**:
   Conditionally displayed on the dashboard when `!token` is active. Highlights key signup value propositions and provides a direct route to the registration screen.
+
+---
+
+### 7. High-Availability API Fallback Cascade Architecture
+
+To ensure the application operates continuously on free tier quotas without hitting request limitations, all backend endpoints implement a server-side retry loop that cycles through backup models when encountering rate limits (`RESOURCE_EXHAUSTED` / HTTP 429) or server busy overloads (`UNAVAILABLE` / HTTP 503):
+
+#### High-Precision Cascade (Resume Parsing & Grading)
+For `/api/analyze` and `/api/parse-resume`, the model fallback cascade is defined as:
+1. **`gemini-2.5-flash`** (Primary choice - strict JSON compliance)
+2. **`gemini-3.5-flash`** (Fallback upgrade - flagship reasoning)
+3. **`gemini-2.5-pro`** (Fallback upgrade - complex instruction execution)
+4. **`gemini-3.1-pro-preview`** (Fallback upgrade - advanced reasoning)
+5. **`gemini-3.1-flash-lite`** (Safety net - lightweight high-volume)
+
+#### Text-Oriented Cascade (Career Chatbot)
+For `/api/chat`, where dense PDF parsing is not required and low-latency text output is preferred:
+1. **`gemini-3.1-flash-lite`** (Primary choice - ~1,500 daily requests)
+2. **`gemini-2.5-flash-lite`** (Fallback option)
+
+The serverless function catches any generation exception, logs a warning detailing the failed model, and recursively invokes the prompt on the next model index in the chain. Only if all models in the cascade fail is an error returned to the client frontend.
+

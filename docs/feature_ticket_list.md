@@ -95,3 +95,32 @@ Below is the structured task list divided into 5 sprints. These tickets define t
 - **Description:** Add a high-converting promotion box below the founder profile card in the sidebar for unauthenticated users.
 - **Deliverables:** Promotion glassmorphic card in `Dashboard.tsx` with clear value propositions and a "Create Free Account" button.
 
+---
+
+### Sprint 7: Advanced Rate Limits, Stepper & UX Enhancements (Completed)
+
+#### Ticket 7.1: Reusable Zustand Toast System
+- **Description:** Implement a global success/error toast notification alert system linked to Zustand state.
+- **Deliverables:** Zustand state controls in `store.ts`, global `<Toast />` component, uploader and parser success triggers.
+
+#### Ticket 7.2: Floating Career AI Chatbot Assistant
+- **Description:** Integrate a floating chatbot using Gemini API. Restrict responses to career advice, template selections, CV vs resume comparisons, and page-length recommendations.
+- **Deliverables:** Floating widget client component (`Chatbot.tsx`) and `/api/chat.ts` serverless route.
+
+#### Ticket 7.3: Curved Wavy SVG Stepper
+- **Description:** Replace the vertical step navigation in the resume wizard with a horizontal wavy SVG stepper that dynamically draws its fill path using `strokeDashoffset`.
+- **Deliverables:** Custom wavy stepper SVG rendering inside `ResumeBuilder.tsx`.
+
+#### Ticket 7.4: Dynamic Stepper Node Validation
+- **Description:** Implement step input field validation. Mark visited steps in the wavy stepper as completed (green checkmark) or incomplete (red warning circle with action required indicator).
+- **Deliverables:** Step validation handlers and dynamic node UI rendering.
+
+#### Ticket 7.5: High-Availability API Fallback Cascade
+- **Description:** Implement server-side retry logic that transparently attempts queries on alternative models in sequence if the primary model hits free quota limits (429) or service outages (503).
+- **Deliverables:** Fallback loops across `api/chat.ts`, `api/analyze.ts`, and `api/parse-resume.ts`.
+
+#### Ticket 7.6: High-Visibility Light Mode Hover States
+- **Description:** Refine hover and border contrast highlights in light mode to make buttons, links, inputs, and list elements pop.
+- **Deliverables:** Explicit light mode hover styles in `index.css`.
+
+

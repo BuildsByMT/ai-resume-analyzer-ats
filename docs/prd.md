@@ -35,9 +35,14 @@ To ensure zero deployment or runtime costs, the entire system utilizes free-tier
 #### Feature 3: Interactive ATS Resume Creator
 - **Autofill Profile:** If a user uploads an existing resume, the system parses it and automatically populates a multi-step form (Contact Info, Experience, Education, Skills, Projects).
 - **Form Builder:** Responsive web form with real-time validation to let users edit, add, or delete sections.
+- **Dynamic Stepper Validation:** Wavy SVG stepper nodes dynamically evaluate inputs when steps are switched. Renders green nodes for completed steps and red warning nodes for incomplete steps.
 - **ATS-Friendly PDF Generator:** A client-side generator compiling details into a clean, single-column, standard-compliant PDF layout.
 
-#### Feature 4: Dashboard History
+#### Feature 4: High-Availability & Free Quotas (Fallback Cascade)
+- **API Model Fallback Loop:** Backend endpoints handle quota limits (`429`) and server overloads (`503`) by catching exceptions and retrying requests across an active model chain (`gemini-2.5-flash` -> `gemini-3.5-flash` -> `gemini-2.5-pro` -> `gemini-3.1-pro-preview` -> `gemini-3.1-flash-lite`).
+- **Completely Free:** Operations are constrained to free-tier endpoints to maintain zero cost.
+
+#### Feature 5: Dashboard History
 - Save past resume analyses and generated PDF histories for logged-in users.
 - Quick re-testing of modified resumes against previously saved job descriptions.
 

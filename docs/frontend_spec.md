@@ -75,7 +75,15 @@ We will use `zustand` for lightweight state management.
 ### 4. Interactive Flow & Animations
 - **File Upload:** Smooth hover states on drag-over, uploader animation during parsing, and global slide-in Toast alert on upload success.
 - **SVG Radial Gauge:** Circular progress path utilizing `stroke-dashoffset` keyframe transition (`fill-circle`) to animate-fill the score from 0% to the matching overall percentage.
-- **Curved Wavy Stepper:** Draws a fluid sinusoidal SVG wave which animates the fill color dynamically utilizing `stroke-dashoffset` as the user navigates steps. Interactive nodes feature pulsating active states and scaling speech bubbles that pop up on active/hover focus.
+- **Curved Wavy Stepper & Validation**:
+  - Draws a fluid sinusoidal SVG wave which animates the fill color dynamically utilizing `stroke-dashoffset` as the user navigates steps.
+  - **Dynamic Node Validation**: Stepper nodes evaluate form fields in real-time. Valid visited nodes render as green circles with checkmarks. Incomplete visited nodes render as rose-red circles with "X" symbols, turning text labels red and triggering a rose-accented speech bubble tooltip stating `⚠️ Action Required`.
+  - Interactive nodes feature pulsating active rings and scaling speech bubbles that pop up on focus/hover.
 - **Staggered Entry transitions:** Uses CSS scale-in and slide-up animations with calculated animation delays (`style={{ animationDelay: '...' }}`) for staggered entries on keyword chips, checklist rows, and AISuggestions cards.
 - **AI CV Assistant:** Keeps track of whether suggestions are already applied. Disables the button and shows "✓ Applied" to prevent duplicate bullet additions.
+- **High-Visibility Light-Mode Hover**: Global styles override hover configurations when `:root.light` is active:
+  - `.glass-card:hover` increases backdrop opacity and adds a cyan glow shadow.
+  - Secondary buttons (`bg-slate-900:hover`) change background color to dark slate-gray (`#cbd5e1` / `#e2e8f0`) to provide high visual contrast.
+  - Navbar links and text labels highlight with bright cyan (`#0891b2`) on hover.
+  - Deletion/Logout components transition to a soft rose tint on hover.
 - **Modals:** Custom React modal components styled with glassmorphic cards and fade/scale transitions, avoiding native browser interrupt block alerts.
