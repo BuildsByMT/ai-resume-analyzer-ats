@@ -58,13 +58,34 @@ Strict limitations on topic scope:
 4. Keep answers relatively concise and structured. Use bullet points and bold formatting where appropriate.
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite',
-      contents,
-      config: {
-        systemInstruction,
+    const CHAT_CASCADE_MODELS = [
+      'gemini-3.1-flash-lite',
+      'gemini-2.5-flash-lite'
+    ];
+
+    let response = null;
+    let lastError = null;
+
+    for (const modelName of CHAT_CASCADE_MODELS) {
+      try {
+        console.log(`Attempting chat generation with model: ${modelName}`);
+        response = await ai.models.generateContent({
+          model: modelName,
+          contents,
+          config: {
+            systemInstruction,
+          }
+        });
+        if (response) break;
+      } catch (err: any) {
+        console.warn(`Model ${modelName} failed:`, err.message || err);
+        lastError = err;
       }
-    });
+    }
+
+    if (!response) {
+      throw new Error(`All chatbot models in fallback cascade failed. Last error: ${lastError?.message || lastError}`);
+    }
 
     const reply = response.text || "I didn't receive a response from the model. Please try again.";
     return res.status(200).json({ success: true, reply });

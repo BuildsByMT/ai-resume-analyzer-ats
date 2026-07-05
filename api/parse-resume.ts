@@ -73,26 +73,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: promptText },
+    const CASCADE_MODELS = [
+      'gemini-2.5-flash',
+      'gemini-3.5-flash',
+      'gemini-2.5-pro',
+      'gemini-3.1-pro-preview',
+      'gemini-3.1-flash-lite'
+    ];
+
+    let response = null;
+    let lastError = null;
+
+    for (const modelName of CASCADE_MODELS) {
+      try {
+        console.log(`Attempting resume parsing with model: ${modelName}`);
+        response = await ai.models.generateContent({
+          model: modelName,
+          contents: [
             {
-              inlineData: {
-                data: base64Data,
-                mimeType: 'application/pdf',
-              },
+              role: 'user',
+              parts: [
+                { text: promptText },
+                {
+                  inlineData: {
+                    data: base64Data,
+                    mimeType: 'application/pdf',
+                  },
+                },
+              ],
             },
           ],
-        },
-      ],
-      config: {
-        responseMimeType: 'application/json',
-      },
-    });
+          config: {
+            responseMimeType: 'application/json',
+          },
+        });
+        if (response) break;
+      } catch (err: any) {
+        console.warn(`Model ${modelName} failed during parsing:`, err.message || err);
+        lastError = err;
+      }
+    }
+
+    if (!response) {
+      throw new Error(`All parsing models in fallback cascade failed. Last error: ${lastError?.message || lastError}`);
+    }
 
     const rawResponseText = response.text || '{}';
     const parsedJson = JSON.parse(rawResponseText);
