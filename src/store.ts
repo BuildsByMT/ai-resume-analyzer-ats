@@ -153,9 +153,10 @@ export const useStore = create<AuthState>((set) => ({
       useStore.getState().showToast('AI Resume analyzed successfully!', 'success');
 
       // Only redirect if user is still on Dashboard
-      const currentHash = window.location.hash;
-      if (currentHash === '#/dashboard' || currentHash === '#/' || !currentHash) {
-        window.location.hash = '#/analysis';
+      const currentPath = window.location.pathname;
+      if (currentPath === '/dashboard' || currentPath === '/' || !currentPath) {
+        window.history.pushState(null, '', '/analysis');
+        window.dispatchEvent(new PopStateEvent('popstate'));
       }
     } catch (error: any) {
       console.error("Background analysis failed:", error);

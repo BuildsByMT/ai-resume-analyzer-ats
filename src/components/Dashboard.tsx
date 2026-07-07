@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store';
 import { Upload, Briefcase, Play, Loader2, History, Trash2, ShieldAlert, User, ExternalLink, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardProps {}
 
 export const Dashboard: React.FC<DashboardProps> = () => {
+  const navigate = useNavigate();
   const { 
     token, 
     user, 
@@ -110,6 +112,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
         const base64String = reader.result as string;
         try {
           await triggerAnalysis(base64String, jobTitle, jobDescription);
+          navigate('/analysis');
         } catch (apiErr: any) {
           setErrorMsg(apiErr.message || 'API request failed.');
         }
@@ -268,7 +271,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
                 {/* Right side: Button CTA */}
                 <div className="flex flex-col items-center justify-center p-2 border-t md:border-t-0 md:border-l border-slate-900/60 md:pl-6">
                   <button
-                    onClick={() => { window.location.hash = '#/signup'; }}
+                    onClick={() => { navigate('/signup'); }}
                     className="w-full max-w-[220px] bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1 hover:opacity-95 shadow-md shadow-cyan-500/10 hover:shadow-cyan-500/20 transition-all cursor-pointer"
                   >
                     Create Free Account
@@ -333,7 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
                         keywords,
                         formattingIssues
                       });
-                      window.location.hash = '#/analysis';
+                      navigate('/analysis');
                     }}
                     className="p-3 bg-slate-950/60 border border-slate-900 hover:border-slate-800 rounded-xl flex items-center justify-between cursor-pointer group transition-all duration-200"
                   >

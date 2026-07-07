@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { ShieldCheck, Mail, Lock, Loader2, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthProps {
   mode: 'login' | 'signup';
@@ -26,6 +27,7 @@ const validatePassword = (pass: string) => {
 };
 
 export const Auth: React.FC<AuthProps> = ({ mode }) => {
+  const navigate = useNavigate();
   const { setAuth } = useStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,13 +82,13 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
         setSuccessMsg('Logged in successfully!');
         setIsRedirecting(true);
         setTimeout(() => {
-          window.location.hash = '#/dashboard';
+          navigate('/dashboard');
         }, 1200);
       } else {
         setSuccessMsg('Registration successful! Redirecting to login...');
         setIsRedirecting(true);
         setTimeout(() => {
-          window.location.hash = '#/login';
+          navigate('/login');
           setIsRedirecting(false);
           setEmail('');
           setPassword('');
@@ -136,7 +138,7 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
           </div>
         )}
         <button
-          onClick={() => { window.location.hash = '#/dashboard'; }}
+          onClick={() => { navigate('/dashboard'); }}
           className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-900/60 border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all duration-300 hover:bg-slate-900 cursor-pointer mb-6"
         >
           <ArrowLeft size={14} className="text-cyan-500" />
@@ -293,7 +295,7 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
 
         <div className="mt-6 text-center">
           <button
-            onClick={() => { window.location.hash = mode === 'login' ? '#/signup' : '#/login'; }}
+            onClick={() => { navigate(mode === 'login' ? '/signup' : '/login'); }}
             className="text-xs text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
           >
             {mode === 'login' 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useStore } from './store';
 import { Navbar } from './components/Navbar';
 import { Auth } from './components/Auth';
@@ -8,37 +8,19 @@ import { ResumeBuilder } from './components/ResumeBuilder';
 import { BarChart3, FileText } from 'lucide-react';
 import { Chatbot } from './components/Chatbot';
 import { Toast } from './components/Toast';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 function App() {
   const { user } = useStore();
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Handle URL Hash routing e.g., #/dashboard, #/login
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash === '#/login') {
-        setActiveTab('login');
-      } else if (hash === '#/signup') {
-        setActiveTab('signup');
-      } else if (hash === '#/creator') {
-        setActiveTab('creator');
-      } else if (hash === '#/analysis') {
-        setActiveTab('analysis');
-      } else {
-        // Fallback to dashboard and set default hash if empty
-        setActiveTab('dashboard');
-        if (!hash || hash === '#/') {
-          window.location.hash = '#/dashboard';
-        }
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    handleHashChange(); // Run initial check on mount
-
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  // Determine active tab/path name for navbar and mobile menu styling
+  let activeTab = 'dashboard';
+  const path = location.pathname.substring(1);
+  if (path === 'login' || path === 'signup' || path === 'creator' || path === 'analysis') {
+    activeTab = path;
+  }
 
   // Apply saved theme on mount
   useEffect(() => {
@@ -81,12 +63,16 @@ function App() {
 
       {/* Main Container Layout */}
       <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-6 relative z-10">
-        <div key={activeTab} className="animate-slide-up">
-          {activeTab === 'login' && <Auth mode="login" />}
-          {activeTab === 'signup' && <Auth mode="signup" />}
-          {activeTab === 'dashboard' && <Dashboard />}
-          {activeTab === 'analysis' && <AnalysisResults />}
-          {activeTab === 'creator' && <ResumeBuilder />}
+        <div key={location.pathname} className="animate-slide-up">
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/login" element={<Auth mode="login" />} />
+            <Route path="/signup" element={<Auth mode="signup" />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/analysis" element={<AnalysisResults />} />
+            <Route path="/creator" element={<ResumeBuilder />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
         </div>
       </main>
 
@@ -99,7 +85,7 @@ function App() {
       {user && (
         <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-slate-950/80 backdrop-blur-lg border-t border-slate-900 px-6 py-2.5 flex items-center justify-around">
           <button
-            onClick={() => { window.location.hash = '#/dashboard'; }}
+            onClick={() => { navigate('/dashboard'); }}
             className={`flex flex-col items-center gap-1 cursor-pointer transition-colors duration-300 ${
               activeTab === 'dashboard' || activeTab === 'analysis'
                 ? 'text-cyan-400'
@@ -111,7 +97,7 @@ function App() {
           </button>
 
           <button
-            onClick={() => { window.location.hash = '#/creator'; }}
+            onClick={() => { navigate('/creator'); }}
             className={`flex flex-col items-center gap-1 cursor-pointer transition-colors duration-300 ${
               activeTab === 'creator'
                 ? 'text-cyan-400'

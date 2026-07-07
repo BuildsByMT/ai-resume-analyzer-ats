@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '../store';
 import { jsPDF } from 'jspdf';
 import { ChevronRight, ChevronLeft, Download, Plus, Trash2, Upload, Loader2, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const industryPresets = {
   tech: {
@@ -39,6 +40,7 @@ const industryPresets = {
 };
 
 export const ResumeBuilder: React.FC = () => {
+  const navigate = useNavigate();
   const { token, userApiKey, currentAnalysis, showToast } = useStore();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1425,7 +1427,7 @@ export const ResumeBuilder: React.FC = () => {
                     Log in or Sign up to unlock interactive suggestions that auto-apply directly to your CV creator forms!
                   </p>
                   <button
-                    onClick={() => { window.location.hash = '#/login'; }}
+                    onClick={() => { navigate('/login'); }}
                     className="w-full bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-bold py-2 rounded-xl text-xs cursor-pointer shadow-md"
                   >
                     Log In / Sign Up

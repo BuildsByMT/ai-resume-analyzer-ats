@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
 import { ChevronLeft, BarChart2, BookOpen, AlertTriangle, CheckCircle, HelpCircle, Copy, Info, Layers, Building, CheckSquare, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface AnalysisResultsProps {}
 
@@ -53,6 +54,7 @@ const PageVisualizer = ({ count }: { count: number }) => {
 };
 
 export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
+  const navigate = useNavigate();
   const { currentAnalysis } = useStore();
   const [activeSubTab, setActiveSubTab] = useState<'keywords' | 'formatting' | 'suggestions' | 'optimization'>('keywords');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -112,7 +114,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
         <h3 className="text-xl font-bold text-slate-200">No active analysis</h3>
         <p className="text-slate-500 text-sm mt-2">Please upload and scan a resume from the dashboard home.</p>
         <button
-          onClick={() => { window.location.hash = '#/dashboard'; }}
+          onClick={() => { navigate('/dashboard'); }}
           className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 hover:text-slate-100 transition-colors"
         >
           <ChevronLeft size={14} /> Back to Dashboard
@@ -129,7 +131,7 @@ export const AnalysisResults: React.FC<AnalysisResultsProps> = () => {
       {/* Return Navigation */}
       <div className="mb-6">
         <button
-          onClick={() => { window.location.hash = '#/dashboard'; }}
+          onClick={() => { navigate('/dashboard'); }}
           className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-900/60 border border-slate-800/80 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
         >
           <ChevronLeft size={14} />
