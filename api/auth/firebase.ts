@@ -135,6 +135,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error: any) {
     console.error('Firebase Auth Verification error:', error);
-    return res.status(401).json({ success: false, message: 'Invalid or expired Google credentials.', error: error.message });
+    return res.status(401).json({ success: false, message: `Google Auth Error: ${error.message}` });
   }
 }
