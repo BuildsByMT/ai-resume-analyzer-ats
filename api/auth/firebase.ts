@@ -10,6 +10,20 @@ import { getDb } from '../db/client.js';
 // Initialize Firebase Admin SDK
 let isInitialized = false;
 
+// Normalize the private key to standard PEM format (removes all double newlines or copy-paste spaces)
+function normalizePrivateKey(key: string): string {
+  const header = '-----BEGIN PRIVATE KEY-----';
+  const footer = '-----END PRIVATE KEY-----';
+  
+  const body = key
+    .replace(header, '')
+    .replace(footer, '')
+    .replace(/\\n/g, '')  // Remove escaped newlines
+    .replace(/\s+/g, '');  // Remove all physical spaces/newlines
+
+  return `${header}\n${body}\n${footer}\n`;
+}
+
 function initFirebaseAdmin() {
   if (isInitialized || getApps().length > 0) {
     isInitialized = true;
@@ -20,7 +34,15 @@ function initFirebaseAdmin() {
     let serviceAccount: any;
 
     if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+      let rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON.trim();
+
+      // Fix any physical newlines inside the JSON string before parsing
+      rawJson = rawJson.replace(/"private_key":\s*"([^"]+)"/gs, (match, p1) => {
+        const cleaned = p1.replace(/\r?\n/g, '\\n');
+        return `"private_key": "${cleaned}"`;
+      });
+
+      serviceAccount = JSON.parse(rawJson);
     } else {
       // Fallback for local development
       const localPath = path.join(process.cwd(), 'firebase-service-account.json');
@@ -31,12 +53,18 @@ function initFirebaseAdmin() {
       }
     }
 
+    // Always clean the private key string before passing it to cert()
+    if (serviceAccount && serviceAccount.private_key) {
+      serviceAccount.private_key = normalizePrivateKey(serviceAccount.private_key);
+    }
+
     initializeApp({
       credential: cert(serviceAccount),
     });
     isInitialized = true;
   } catch (error: any) {
     console.error('Firebase Admin initialization error:', error.message);
+    throw error; // Re-throw so the server log captures the crash details
   }
 }
 
@@ -127,6 +155,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error: any) {
     console.error('Firebase Auth Verification error:', error);
-    return res.status(401).json({ success: false, message: 'Invalid or expired Google credentials.', error: error.message });
+    return res.status(500).json({ success: false, message: 'A server error occurred during verification.', error: error.message });
   }
 }
