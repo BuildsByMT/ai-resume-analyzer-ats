@@ -1,71 +1,45 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getApps, initializeApp, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
 import { getDb } from '../db/client.js';
 
-// Initialize Firebase Admin SDK
-let isInitialized = false;
+// Verify Firebase ID Token using Google's public certificates (pure JWT verification)
+async function verifyFirebaseIdToken(idToken: string, projectId: string): Promise<any> {
+  // 1. Fetch public keys from Google
+  const response = await fetch('https://www.googleapis.com/robot/v1/metadata/x509/securetoken-system@system.gserviceaccount.com');
+  if (!response.ok) {
+    throw new Error('Failed to fetch public certificates from Google.');
+  }
+  const publicKeys: Record<string, string> = await response.json();
 
-// Normalize the private key to standard PEM format (removes all double newlines or copy-paste spaces)
-function normalizePrivateKey(key: string): string {
-  const header = '-----BEGIN PRIVATE KEY-----';
-  const footer = '-----END PRIVATE KEY-----';
-  
-  const body = key
-    .replace(header, '')
-    .replace(footer, '')
-    .replace(/\\n/g, '')  // Remove escaped newlines
-    .replace(/\s+/g, '');  // Remove all physical spaces/newlines
-
-  return `${header}\n${body}\n${footer}\n`;
-}
-
-function initFirebaseAdmin() {
-  if (isInitialized || getApps().length > 0) {
-    isInitialized = true;
-    return;
+  // 2. Decode header to find key ID (kid)
+  const decoded: any = jwt.decode(idToken, { complete: true });
+  if (!decoded || !decoded.header || !decoded.header.kid) {
+    throw new Error('Invalid token structure.');
   }
 
-  try {
-    let serviceAccount: any;
+  const kid = decoded.header.kid;
+  const publicKey = publicKeys[kid];
+  if (!publicKey) {
+    throw new Error('Public key not found for token signature verification.');
+  }
 
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-      let rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON.trim();
-
-      // Fix any physical newlines inside the JSON string before parsing
-      rawJson = rawJson.replace(/"private_key":\s*"([^"]+)"/gs, (match, p1) => {
-        const cleaned = p1.replace(/\r?\n/g, '\\n');
-        return `"private_key": "${cleaned}"`;
-      });
-
-      serviceAccount = JSON.parse(rawJson);
-    } else {
-      // Fallback for local development
-      const localPath = path.join(process.cwd(), 'firebase-service-account.json');
-      if (fs.existsSync(localPath)) {
-        serviceAccount = JSON.parse(fs.readFileSync(localPath, 'utf8'));
-      } else {
-        throw new Error('Firebase service account credentials not found in env or local file.');
+  // 3. Verify JWT signature and claims (issuer, audience)
+  return new Promise((resolve, reject) => {
+    jwt.verify(
+      idToken,
+      publicKey,
+      {
+        algorithms: ['RS256'],
+        audience: projectId,
+        issuer: `https://securetoken.google.com/${projectId}`
+      },
+      (err, decodedPayload) => {
+        if (err) return reject(err);
+        resolve(decodedPayload);
       }
-    }
-
-    // Always clean the private key string before passing it to cert()
-    if (serviceAccount && serviceAccount.private_key) {
-      serviceAccount.private_key = normalizePrivateKey(serviceAccount.private_key);
-    }
-
-    initializeApp({
-      credential: cert(serviceAccount),
-    });
-    isInitialized = true;
-  } catch (error: any) {
-    console.error('Firebase Admin initialization error:', error.message);
-    throw error; // Re-throw so the server log captures the crash details
-  }
+    );
+  });
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -79,16 +53,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ success: false, message: 'Firebase ID Token is required.' });
   }
 
+  // Use the Firebase Project ID from the environment variables
+  const projectId = process.env.VITE_FIREBASE_PROJECT_ID;
+
+  if (!projectId) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server configuration error: VITE_FIREBASE_PROJECT_ID is not configured in environment variables.'
+    });
+  }
+
   try {
-    // Ensure Firebase Admin is initialized
-    initFirebaseAdmin();
-
-    const auth = getAuth();
-
-    // 1. Verify the ID token using Firebase Admin Auth SDK
-    const decodedToken = await auth.verifyIdToken(idToken);
+    // 1. Verify the ID token manually using standard JWT checks
+    const decodedToken = await verifyFirebaseIdToken(idToken, projectId);
+    
     const email = decodedToken.email;
-    const firebaseUid = decodedToken.uid;
+    const firebaseUid = decodedToken.sub; // Firebase UID is stored in the 'sub' (subject) claim
     const emailVerified = decodedToken.email_verified;
 
     if (!email) {
@@ -155,6 +135,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error: any) {
     console.error('Firebase Auth Verification error:', error);
-    return res.status(500).json({ success: false, message: 'A server error occurred during verification.', error: error.message });
+    return res.status(401).json({ success: false, message: 'Invalid or expired Google credentials.', error: error.message });
   }
 }
