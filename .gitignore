@@ -28,3 +28,8 @@ dist-ssr
 .env.production
 .env.development
 
+# Credentials and Service Accounts
+firebase-service-account.json
+firebase-service-account*.json
+
+

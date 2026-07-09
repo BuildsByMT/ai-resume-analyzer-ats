@@ -10,7 +10,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(36) PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
+        password_hash VARCHAR(255) NULL,
+        firebase_uid VARCHAR(128) UNIQUE NULL,
+        auth_provider VARCHAR(50) DEFAULT 'local',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
