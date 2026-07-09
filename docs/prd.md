@@ -16,7 +16,8 @@ To ensure zero deployment or runtime costs, the entire system utilizes free-tier
 ### 3. Core Features & Functional Requirements
 
 #### Feature 1: Authentication & User Accounts
-- **JWT Auth:** Users can register and login securely via email/password.
+- **Hybrid JWT & Google OAuth:** Support secure login and signup via both email/password credentials and Google Accounts (powered by Firebase Client SDK).
+- **Automatic Account Linking**: Signing in with Google with an email address already registered via email/password automatically links the Google identity to the existing account without losing user history.
 - **Guest Mode:** Allow users to run a single check without signing up (encourages engagement).
 - **Session State:** Local session management with automatic expiry.
 

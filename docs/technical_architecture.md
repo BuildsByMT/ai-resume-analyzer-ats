@@ -2,11 +2,12 @@
 ## Project: AI Resume Analyzer & ATS Optimizer
 
 ### 1. System Overview
-The application follows a serverless architecture optimized for Vercel's free tier and TiDB Cloud Serverless database. There is no persistent backend server running; instead, Vercel Serverless Functions execute backend logic dynamically.
+The application follows a serverless architecture optimized for Vercel's free tier and TiDB Cloud Serverless database. User authentication is hybrid, supporting email/password sign-in and Google Authentication via the Firebase Client SDK.
 
 ```mermaid
 graph TD
-    Client[React SPA - Vercel Frontend] -->|Auth & DB Queries| VercelAPIs[Vercel Serverless API Routes]
+    Client[React SPA - Vercel Frontend] -->|Google Authentication| Firebase[Firebase Client SDK]
+    Client -->|Local Auth & DB Queries| VercelAPIs[Vercel Serverless API Routes]
     Client -->|Direct Settings / Keys| GeminiAPI[Google Gemini API]
     VercelAPIs -->|HTTP Serverless Driver| TiDB[TiDB Cloud Serverless MySQL]
     VercelAPIs -->|Prompt + PDF / Job Description| GeminiAPI
@@ -22,7 +23,9 @@ Since we are using TiDB Cloud Serverless (MySQL-compatible), we will create tabl
 CREATE TABLE users (
     id VARCHAR(36) PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NULL, -- Nullable for Google Auth users
+    firebase_uid VARCHAR(255) UNIQUE NULL, -- Google UID
+    auth_provider VARCHAR(50) DEFAULT 'local', -- 'local' or 'google'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -63,7 +66,8 @@ We will use Next.js or Node.js serverless functions under `/api`.
 #### API Endpoints:
 1. `POST /api/auth/signup` - Register a new user (hashing password using `bcryptjs` and saving to TiDB).
 2. `POST /api/auth/login` - Verify user credentials, return JWT token.
-3. `POST /api/analyze` - Analyze resume.
+3. `POST /api/auth/firebase` - Receive a Firebase ID token, verify Google credentials via pure JWT verification, link account if necessary, and return a local JWT token.
+4. `POST /api/analyze` - Analyze resume.
    - **Request Payload:**
      ```json
      {

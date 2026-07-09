@@ -23,8 +23,8 @@ This project is engineered to operate **100% free of charge** using serverless f
 
 ## 🛠️ Technology Stack
 
-* **Frontend:** React (Vite) + Tailwind CSS + Zustand (State Management) + Lucide Icons + jsPDF (PDF Generation)
-* **Backend:** Vercel Serverless Functions (Node.js API Routes)
+* **Frontend:** React (Vite) + Tailwind CSS + Zustand (State Management) + Lucide Icons + jsPDF (PDF Generation) + Firebase Client SDK
+* **Backend:** Vercel Serverless Functions (Node.js API Routes) + JSON Web Token (JWT) Signature Verification (using Google's Public Certificates)
 * **Database:** TiDB Cloud Serverless (Fully managed, MySQL-compatible relational database)
 * **AI Integration:** Google Gemini API (via the `@google/genai` unified SDK)
 * **Hosting & Deployment:** Vercel (Free Tier)
@@ -35,10 +35,22 @@ This project is engineered to operate **100% free of charge** using serverless f
 
 To run this application locally or in production, configure the following keys inside a `.env` file or your hosting provider's settings:
 
+### Frontend (.env)
+```text
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_firebase_app_id
+```
+
+### Backend (Vercel Environment Variables)
 ```text
 DATABASE_URL=mysql://[user]:[password]@[host]:4000/[database]?ssl={"rejectUnauthorized":true}
 GEMINI_API_KEY=your_gemini_api_key
 JWT_SECRET=your_jwt_signing_secret
+VITE_FIREBASE_PROJECT_ID=your_firebase_project_id (used to verify incoming Firebase ID Tokens)
 ```
 
 ---
