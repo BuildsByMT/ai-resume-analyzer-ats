@@ -6,7 +6,7 @@ import { getDb } from '../db/client.js';
 // Verify Firebase ID Token using Google's public certificates (pure JWT verification)
 async function verifyFirebaseIdToken(idToken: string, projectId: string): Promise<any> {
   // 1. Fetch public keys from Google
-  const response = await fetch('https://www.googleapis.com/robot/v1/metadata/x509/securetoken-system@system.gserviceaccount.com');
+  const response = await fetch('https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com');
   if (!response.ok) {
     throw new Error('Failed to fetch public certificates from Google.');
   }
