@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import admin from 'firebase-admin';
+import { getApps, initializeApp, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import fs from 'fs';
@@ -7,7 +8,14 @@ import path from 'path';
 import { getDb } from '../db/client.js';
 
 // Initialize Firebase Admin SDK
-if (admin.apps.length === 0) {
+let isInitialized = false;
+
+function initFirebaseAdmin() {
+  if (isInitialized || getApps().length > 0) {
+    isInitialized = true;
+    return;
+  }
+
   try {
     let serviceAccount: any;
 
@@ -23,9 +31,10 @@ if (admin.apps.length === 0) {
       }
     }
 
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+    initializeApp({
+      credential: cert(serviceAccount),
     });
+    isInitialized = true;
   } catch (error: any) {
     console.error('Firebase Admin initialization error:', error.message);
   }
@@ -43,8 +52,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // 1. Verify the ID token using Firebase Admin SDK
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    // Ensure Firebase Admin is initialized
+    initFirebaseAdmin();
+
+    const auth = getAuth();
+
+    // 1. Verify the ID token using Firebase Admin Auth SDK
+    const decodedToken = await auth.verifyIdToken(idToken);
     const email = decodedToken.email;
     const firebaseUid = decodedToken.uid;
     const emailVerified = decodedToken.email_verified;
@@ -95,7 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // 5. Generate local JWT session token (matches your login.ts structure)
+    // 5. Generate local JWT session token
     const jwtSecret = process.env.JWT_SECRET || 'fallback-secure-jwt-secret-string-12345';
     const token = jwt.sign(
       { userId: user.id, email: user.email },
