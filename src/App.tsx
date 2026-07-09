@@ -62,7 +62,9 @@ function App() {
       <Navbar activeTab={activeTab} />
 
       {/* Main Container Layout */}
-      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-6 relative z-10">
+      <main className={`flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10 ${
+        user ? 'pb-24 md:pb-6' : 'pb-6'
+      }`}>
         <div key={location.pathname} className="animate-slide-up">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -77,7 +79,9 @@ function App() {
       </main>
 
       {/* Footer Branding */}
-      <footer className="w-full text-center py-6 border-t border-slate-950 text-[10px] text-slate-600 font-semibold tracking-wider uppercase pb-24 md:pb-6">
+      <footer className={`w-full text-center py-6 border-t border-slate-950 text-[10px] text-slate-600 font-semibold tracking-wider uppercase ${
+        user ? 'pb-24 md:pb-6' : 'pb-6'
+      }`}>
         © 2026 Resume Optimizer Dashboard. All rights reserved. Powered by TiDB Cloud & Gemini AI.
       </footer>
 
