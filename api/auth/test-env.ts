@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getApps, initializeApp, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 
 // Normalize key to standard PEM format
 function normalizePrivateKey(key: string): string {
@@ -45,6 +46,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         diagnostics.privateKeyNormalizable = true;
         const normalized = normalizePrivateKey(serviceAccount.private_key);
         diagnostics.privateKeyLength = normalized.length;
+
+        if (getApps().length === 0) {
+          initializeApp({
+            credential: cert({
+              ...serviceAccount,
+              private_key: normalized
+            })
+          });
+        }
+        diagnostics.initialized = true;
+        
+        const auth = getAuth();
+        diagnostics.authCreated = !!auth;
       }
     } else {
       diagnostics.error = "FIREBASE_SERVICE_ACCOUNT_JSON env variable is missing or empty.";
