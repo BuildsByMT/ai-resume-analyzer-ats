@@ -1,6 +1,4 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getApps, initializeApp, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 
 function normalizePrivateKey(key: string): string {
   const header = '-----BEGIN PRIVATE KEY-----';
@@ -27,6 +25,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   try {
+    // Defer imports using dynamic imports so they are executed inside the try-catch block
+    const { getApps, initializeApp, cert } = await import('firebase-admin/app');
+    const { getAuth } = await import('firebase-admin/auth');
+
     diagnostics.appsLength = getApps().length;
 
     const rawEnv = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
