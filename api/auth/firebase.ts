@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 
-  const { idToken } = req.body;
+  const { idToken, action } = req.body;
 
   if (!idToken) {
     return res.status(400).json({ success: false, message: 'Firebase ID Token is required.' });
@@ -94,27 +94,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const emailRows = Array.isArray(userByEmail) ? userByEmail : (userByEmail as any).rows || [];
 
       if (emailRows.length > 0) {
-        // Link the Google account to the existing email record
-        const existingUser = emailRows[0];
-        await db.execute(
-          'UPDATE users SET firebase_uid = ?, auth_provider = ? WHERE id = ?',
-          [firebaseUid, 'google', existingUser.id]
-        );
-        user = { ...existingUser, firebase_uid: firebaseUid, auth_provider: 'google' };
-      } else {
-        // 4. Create a new user record
-        const newId = crypto.randomUUID();
-        await db.execute(
-          "INSERT INTO users (id, email, password_hash, firebase_uid, auth_provider) VALUES (?, ?, NULL, ?, 'google')",
-          [newId, email, firebaseUid]
-        );
-        user = {
-          id: newId,
-          email,
-          firebase_uid: firebaseUid,
-          auth_provider: 'google'
-        };
+        user = emailRows[0];
       }
+    }
+
+    // 4. Enforce strict Google Sign-Up vs. Log-In checks
+    if (action === 'signup' && user !== null) {
+      return res.status(400).json({
+        success: false,
+        code: 'GOOGLE_ALREADY_REGISTERED',
+        message: 'This Google account is already registered. Please log in instead.'
+      });
+    }
+
+    if (action === 'login' && user === null) {
+      return res.status(400).json({
+        success: false,
+        code: 'GOOGLE_NOT_REGISTERED',
+        message: 'No account found with this Google email. Please register/sign up first.'
+      });
+    }
+
+    // 5. Perform database linking/inserts if validated
+    if (user === null) {
+      // Create a new user record
+      const newId = crypto.randomUUID();
+      await db.execute(
+        "INSERT INTO users (id, email, password_hash, firebase_uid, auth_provider) VALUES (?, ?, NULL, ?, 'google')",
+        [newId, email, firebaseUid]
+      );
+      user = {
+        id: newId,
+        email,
+        firebase_uid: firebaseUid,
+        auth_provider: 'google'
+      };
+    } else if (!user.firebase_uid) {
+      // Link the Google account to the existing email record
+      await db.execute(
+        'UPDATE users SET firebase_uid = ?, auth_provider = ? WHERE id = ?',
+        [firebaseUid, 'google', user.id]
+      );
+      user.firebase_uid = firebaseUid;
+      user.auth_provider = 'google';
     }
 
     // 5. Generate local JWT session token

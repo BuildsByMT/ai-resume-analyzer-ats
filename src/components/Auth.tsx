@@ -54,12 +54,27 @@ export const Auth: React.FC<AuthProps> = ({ mode }) => {
       const response = await fetch('/api/auth/firebase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ idToken, action: mode }),
       });
 
       const data = await response.json();
 
       if (!response.ok || !data.success) {
+        if (data.code === 'GOOGLE_ALREADY_REGISTERED') {
+          setErrorMsg(data.message || 'This Google account is already registered. Redirecting to Log In...');
+          setTimeout(() => {
+            navigate('/login');
+            setErrorMsg('');
+          }, 3000);
+          return;
+        } else if (data.code === 'GOOGLE_NOT_REGISTERED') {
+          setErrorMsg(data.message || 'Account not found. Redirecting to Sign Up...');
+          setTimeout(() => {
+            navigate('/signup');
+            setErrorMsg('');
+          }, 3000);
+          return;
+        }
         throw new Error(data.message || data.error || 'Google Authentication failed.');
       }
 
