@@ -2,7 +2,6 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getApps, initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
-// Normalize key to standard PEM format
 function normalizePrivateKey(key: string): string {
   const header = '-----BEGIN PRIVATE KEY-----';
   const footer = '-----END PRIVATE KEY-----';
@@ -22,10 +21,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     firebaseServiceAccountJsonExists: false,
     parsedSuccessfully: false,
     error: null,
-    appsLength: getApps().length
+    appsLength: 0,
+    initialized: false,
+    authCreated: false
   };
 
   try {
+    diagnostics.appsLength = getApps().length;
+
     const rawEnv = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
     if (rawEnv) {
       diagnostics.firebaseServiceAccountJsonExists = true;
